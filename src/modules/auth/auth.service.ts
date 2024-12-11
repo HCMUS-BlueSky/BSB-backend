@@ -1,276 +1,286 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
 import {
-  ForgotPasswordDto,
-  LoginResponseDto,
-  LoginUserDto,
-  RegisterUserDto,
-  ResendEmailDto,
-  ResetPasswordDto,
-  VerifyEmailDto,
-} from './dto/auth.dto';
-// import { JwtService } from 'src/modules/jwt/jwt.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from 'src/schemas/user.schema';
-// import { isValidObjectId, Model, Types } from 'mongoose';
-// import * as bcrypt from 'bcrypt';
-// import { I18nContext, I18nService } from 'nestjs-i18n';
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { LoginRequestDto, RegisterRequestDto } from './dto/auth.dto';
+import { ROLES } from 'src/common/constants';
+import { JwtService } from '@nestjs/jwt';
+import { compareSync, genSalt, hash } from 'bcrypt';
+import { ErrorMessage, SuccessMessage } from 'src/common/messages';
+import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
-// import { MailService } from 'src/services/mail/mail.service';
-// import { randomUUID } from 'crypto';
-import { EmailToken, EmailTokenDocument } from 'src/schemas/email-token.schema';
-import { ResetToken, ResetTokenDocument } from 'src/schemas/reset-token.schema';
+// import { MailService } from '../../../services/mail/mail.service';
+// import { UserDto } from '../user/dto/user.dto';
+// import { uuid } from 'uuidv4';
 
 @Injectable()
 export class AuthService {
   constructor(
-    // private readonly jwtService: JwtService,
-    // private readonly i18n: I18nService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+
     // private readonly mailService: MailService,
-    @InjectModel(User.name, 'users') private userModel: Model<UserDocument>,
-    @InjectModel(EmailToken.name, 'users')
-    private emailTokenModel: Model<EmailTokenDocument>,
-    @InjectModel(ResetToken.name, 'users')
-    private resetTokenModel: Model<ResetTokenDocument>,
+    // private readonly authRedisService: AuthRedis,
   ) {}
 
-  // async register(body: RegisterUserDto): Promise<string> {
-  //   const existed = await this.userModel.exists({ email: body.email });
-  //   if (existed) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorUserExisted', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const newUser = new this.userModel(body);
-  //   newUser.password = await bcrypt.hash(newUser.password, 10);
-  //   await newUser.save();
-  //   const token = randomUUID();
-  //   const verifyToken = new this.emailTokenModel({
-  //     owner: newUser._id,
-  //     token: token,
-  //   });
-  //   await verifyToken.save();
-  //   this.mailService.sendUserConfirmation(newUser, verifyToken);
+  async register(data: RegisterRequestDto) {
+    //check email exist
+    const user = await this.userService.findOneByEmail(data.email);
+    if (user) {
+      throw new BadRequestException(ErrorMessage.USER_EXISTED);
+    }
+    const salt = await genSalt(10);
+    const hashPassword = await hash(data.password, salt);
+    const newUser = {
+      ...data,
+      password: hashPassword,
+      role: ROLES.CUSTOMER,
+    };
+    await this.userService.createUser(newUser);
+    return SuccessMessage.SUCCESS;
+  }
 
-  //   return this.i18n.t('common.SuccessUserRegistered', {
-  //     lang: I18nContext.current().lang,
-  //   });
+  // async sendVerifyCode(user: UserEntity, token: string) {
+  //   await this.mailService.sendUserConfirmation(user, token);
   // }
 
-  // async login(body: LoginUserDto): Promise<LoginResponseDto> {
-  //   const user = await this.userModel.findOne({ email: body.email });
-  //   if (!user) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorLogin', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const passwordHash = user.password;
-  //   const isMatch = await bcrypt.compare(body.password, passwordHash);
-  //   if (!isMatch) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorLogin', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const isVerified = user.verified;
-  //   if (!isVerified) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorNotVerified', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const dt = new Date();
-  //   const iat = Math.floor(dt.getTime() / 1000);
-  //   const exp = Math.floor(
-  //     new Date(
-  //       dt.getTime() +
-  //         (this.configService.get<number>('TOKEN_TTL') || 86400) * 1000,
-  //     ).valueOf() / 1000,
-  //   );
-  //   const claims = {
-  //     id: user.id,
-  //     iat,
-  //     exp,
-  //   };
-  //   const token = await this.jwtService.sign(claims);
+  // async sendForgotPwdEmail(user: UserEntity, token: string) {
+  //   await this.mailService.sendResetPwd(user, token);
+  // }
 
+  // async confirmVerifyCode(token: string) {
+  //   let decoded;
+  //   try {
+  //     decoded = this.jwtService.verify(token, {
+  //       secret: process.env.JWT_VALIDATE_ACCOUNT_KEY,
+  //     });
+  //   } catch {
+  //     throw new BadRequestException(ErrorMessage.EXPIRED_TOKEN);
+  //   }
+  //   const findUser = await this.userService.findOneByEmail(decoded.email);
+  //   if (!findUser) {
+  //     throw new BadRequestException(ErrorMessage.INVALID_USER);
+  //   }
+  //   if (findUser.isValidate) {
+  //     throw new BadRequestException(ErrorMessage.VALIDATED_ACCOUNT);
+  //   }
+  //   await this.userService.updateUserByEmail(decoded.email, {
+  //     isValidate: true,
+  //   });
+
+  //   //generate token
+  //   const jwtid = uuid();
+  //   const auth = await this.createAuthToken({
+  //     id: findUser.id,
+  //     role: findUser.role,
+  //     jwtid,
+  //   });
+  //   await this.authRedisService.setTokenByUser(auth, jwtid);
   //   return {
-  //     token,
-  //     message: this.i18n.t('common.SuccessLogin', {
-  //       lang: I18nContext.current().lang,
-  //     }),
+  //     user: {
+  //       name: findUser?.name,
+  //       role: findUser?.role,
+  //     },
+  //     auth,
   //   };
   // }
 
-  // async confirm(body: VerifyEmailDto): Promise<string> {
-  //   const { id, token } = body;
-  //   if (!isValidObjectId(id)) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorInvalidToken', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const userToken = await this.emailTokenModel.findOne({
-  //     owner: new Types.ObjectId(id),
-  //     token: token,
+  async validateToken(token: string) {
+    try {
+      const { id, role } = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_ACCESS_KEY'),
+      });
+      return {
+        id,
+        role,
+      };
+    } catch {
+      throw new UnauthorizedException(ErrorMessage.EXPIRED_TOKEN);
+    }
+  }
+
+  async login(data: LoginRequestDto) {
+    //check email exist
+    const user = await this.userService.findOneByEmail(data.email);
+    if (!user) {
+      throw new BadRequestException(ErrorMessage.INVALID_USER);
+    }
+    //compare pwd
+    await this.comparePassword(data.password, user.password);
+
+    const auth = this.createAuthToken({
+      id: user.id,
+      role: user.role,
+    });
+    return auth;
+  }
+
+  async comparePassword(password: string, authPassword: string) {
+    const checkPassword = compareSync(password, authPassword);
+    if (!checkPassword) {
+      throw new BadRequestException(ErrorMessage.WRONG_PASSWORD);
+    }
+  }
+
+  private createAuthToken(data: any) {
+    const { accessToken } = this.generateAccessToken(data);
+    const { refreshToken } = this.generateRefreshToken(data);
+
+    return { accessToken, refreshToken };
+  }
+
+  private generateAccessToken(payload: any) {
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_ACCESS_KEY'),
+      expiresIn: this.configService.get<string>('JWT_ACCESS_KEY_EXPIRE'),
+    });
+    return { accessToken };
+  }
+
+  private generateRefreshToken(payload: any) {
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_KEY'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_KEY_EXPIRE'),
+    });
+    return { refreshToken };
+  }
+
+  // private generateResetPasswordToken(payload: any) {
+  //   const resetPasswordToken = this.jwtService.sign(payload, {
+  //     secret: process.env.JWT_RESET_PASSWORD_KEY,
+  //     expiresIn: process.env.JWT_RESET_PASSWORD_KEY_EXPIRE,
   //   });
-  //   if (!userToken) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorInvalidToken', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const unverifedUser = await this.userModel.findOne({
-  //     _id: id,
-  //     verified: false,
-  //   });
-  //   if (!unverifedUser) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorAlreadyVerify', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const yesterday = new Date(new Date().valueOf() - 24 * 60 * 60 * 1000);
-  //   if (userToken.createdAt < yesterday) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorInvalidToken', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   await this.userModel.findByIdAndUpdate(id, { verified: true });
-  //   return this.i18n.t('common.SuccessEmailVerify', {
-  //     lang: I18nContext.current().lang,
-  //   });
+  //   return { resetPasswordToken };
   // }
 
-  // async resend(body: ResendEmailDto): Promise<string> {
-  //   const user = await this.userModel.findOne({
-  //     email: body.email,
-  //     verified: false,
+  // private generateValidateAccountToken(payload: any) {
+  //   const validateToken = this.jwtService.sign(payload, {
+  //     secret: process.env.JWT_VALIDATE_ACCOUNT_KEY,
+  //     expiresIn: process.env.JWT_VALIDATE_ACCOUNT_KEY_EXPIRE,
   //   });
-  //   if (!user) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorUserNotExistOrAlreadyVerify', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
+  //   return { validateToken };
+  // }
+
+  //send email to validate account
+  // async sendValidate(email: string) {
+  //   const authUser = await this.userService.findOneByEmail(email);
+  //   if (!authUser) {
+  //     throw new BadRequestException(ErrorMessage.INVALID_USER);
   //   }
-  //   const previousToken = await this.emailTokenModel.findOne({
-  //     owner: user._id,
+  //   if (authUser.isValidate) {
+  //     throw new BadRequestException(ErrorMessage.VALIDATED_ACCOUNT);
+  //   }
+  //   const { validateToken } = this.generateValidateAccountToken({
+  //     email: email,
   //   });
-  //   const token = randomUUID();
-  //   let newToken = new this.emailTokenModel({
-  //     owner: user._id,
-  //     token: token,
+  //   this.sendVerifyCode(authUser, validateToken);
+  //   return true;
+  // }
+
+  //send email to reset pwd
+  // async sendResetPassword(email: string) {
+  //   const authUser = await this.userService.findOneByEmail(email);
+  //   if (!authUser) {
+  //     throw new BadRequestException(ErrorMessage.INVALID_USER);
+  //   }
+  //   const { resetPasswordToken } = this.generateResetPasswordToken({
+  //     email: email,
   //   });
-  //   if (!previousToken) {
-  //     await newToken.save();
-  //   } else {
-  //     const yesterday = new Date(new Date().valueOf() - 24 * 60 * 60 * 1000);
-  //     if (previousToken.createdAt < yesterday) {
-  //       await this.emailTokenModel.findByIdAndDelete(previousToken._id);
-  //       await newToken.save();
-  //     } else {
-  //       newToken = previousToken;
+  //   this.sendForgotPwdEmail(authUser, resetPasswordToken);
+  //   return true;
+  // }
+  // login -> access + refresh
+  //logout -> give both token in blacklist
+  // validate -> find token in blacklist -> reject
+  // async refreshToken(token: string) {
+  //   try {
+  //     const { id, role, jwtid } = await this.jwtService.verify(token, {
+  //       secret: process.env.JWT_REFRESH_KEY,
+  //     });
+  //     //check if it exist in redis
+  //     const storeToken = await this.authRedisService.getTokenByUser(jwtid);
+  //     if (!storeToken || storeToken?.refreshToken != token) {
+  //       throw new UnauthorizedException();
   //     }
-  //   }
-  //   this.mailService.sendUserConfirmation(user, newToken);
-  //   return this.i18n.t('common.SuccessEmailResend', {
-  //     lang: I18nContext.current().lang,
-  //   });
-  // }
-
-  // async forgotPassword(body: ForgotPasswordDto) {
-  //   const user = await this.userModel.findOne({
-  //     email: body.email,
-  //     verified: true,
-  //   });
-  //   if (!user) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorUserNotExistOrNotVerify', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const previousToken = await this.resetTokenModel.findOne({
-  //     owner: user._id,
-  //   });
-  //   const token = randomUUID();
-  //   let newToken = new this.resetTokenModel({
-  //     owner: user._id,
-  //     token: token,
-  //   });
-  //   if (!previousToken) {
-  //     await newToken.save();
-  //   } else {
-  //     const yesterday = new Date(new Date().valueOf() - 24 * 60 * 60 * 1000);
-  //     if (previousToken.createdAt < yesterday) {
-  //       await this.resetTokenModel.findByIdAndDelete(previousToken._id);
-  //       await newToken.save();
-  //     } else {
-  //       newToken = previousToken;
+  //     let user: any;
+  //     if (role == ROLES.ADMIN || role == ROLES.USER) {
+  //       user = await this.userService.findOneById(id);
+  //     } else if (role == ROLES.SUPER_ADMIN) {
+  //       user = await this.userService.findAdminById(id);
   //     }
+  //     const { refreshToken, accessToken } = storeToken;
+  //     try {
+  //       await this.jwtService.verifyAsync(accessToken, {
+  //         secret: process.env.JWT_ACCESS_KEY,
+  //       });
+  //     } catch (error) {
+  //       //refresh not expire, but access expired
+  //       const { accessToken: newAccessToken } = this.generateAccessToken({
+  //         id,
+  //         role,
+  //         jwtid,
+  //       });
+  //       //save into redis
+  //       await this.authRedisService.setTokenByUser(
+  //         { accessToken: newAccessToken, refreshToken },
+  //         jwtid,
+  //       );
+  //       return {
+  //         accessToken: newAccessToken,
+  //         refreshToken: token,
+  //         user: {
+  //           id: user.id,
+  //           name: user.name,
+  //           email: user.email,
+  //           birthdate: user?.birthdate,
+  //           role: user?.role ?? ROLES.SUPER_ADMIN,
+  //         },
+  //       };
+  //     }
+
+  //     return {
+  //       accessToken: accessToken,
+  //       refreshToken: refreshToken,
+  //       user: {
+  //         id: user.id,
+  //         name: user.name,
+  //         email: user.email,
+  //         birthdate: user?.birthdate,
+  //         role: user?.role ?? ROLES.SUPER_ADMIN,
+  //       },
+  //     };
+  //   } catch (err) {
+  //     throw new UnauthorizedException(ErrorMessage.EXPIRED_TOKEN);
   //   }
-  //   this.mailService.sendResetPassword(user, newToken);
-  //   return this.i18n.t('common.SuccessResetPasswordSend', {
-  //     lang: I18nContext.current().lang,
-  //   });
   // }
 
-  // async resetPassword(body: ResetPasswordDto) {
-  //   const { id, token, new_password, confirm_password } = body;
-  //   if (new_password !== confirm_password) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorConfirmPasswordNotMatch', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
+  // async logout(user: any) {
+  //   await this.authRedisService.delTokenByUser(user.key);
+  //   await this.userService.updateUserById(user.id, { lastActive: new Date() });
+  //   return true;
+  // }
+
+  // async resetPassword(data: ResetPwdDto) {
+  //   const { token, password } = data;
+  //   let decoded;
+  //   try {
+  //     decoded = this.jwtService.verify(token, {
+  //       secret: process.env.JWT_RESET_PASSWORD_KEY,
+  //     });
+  //   } catch {
+  //     throw new BadRequestException(ErrorMessage.EXPIRED_TOKEN);
   //   }
-  //   if (!isValidObjectId(id)) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorInvalidToken', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
+  //   const findUser = await this.userService.findOneByEmail(decoded.email);
+  //   if (!findUser) {
+  //     throw new BadRequestException(ErrorMessage.INVALID_USER);
   //   }
-  //   const resetToken = await this.resetTokenModel.findOne({
-  //     owner: new Types.ObjectId(id),
-  //     token: token,
+  //   const salt = await genSalt(10);
+  //   const hashPassword = await hash(password, salt);
+  //   await this.userService.updateUserByEmail(decoded.email, {
+  //     password: hashPassword,
   //   });
-  //   if (!resetToken) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorInvalidToken', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const yesterday = new Date(new Date().valueOf() - 24 * 60 * 60 * 1000);
-  //   if (resetToken.createdAt < yesterday) {
-  //     throw new BadRequestException(
-  //       this.i18n.t('common.ErrorInvalidToken', {
-  //         lang: I18nContext.current().lang,
-  //       }),
-  //     );
-  //   }
-  //   const new_hashed_password = await bcrypt.hash(new_password, 10);
-  //   await this.userModel.findByIdAndUpdate(id, {
-  //     password: new_hashed_password,
-  //   });
-  //   await this.resetTokenModel.findOneAndDelete({
-  //     owner: new Types.ObjectId(id),
-  //   });
-  //   return this.i18n.t('common.SuccessResetPassword', {
-  //     lang: I18nContext.current().lang,
-  //   });
+  //   return true;
   // }
 }

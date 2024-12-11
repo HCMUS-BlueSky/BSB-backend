@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
+  IsMobilePhone,
   IsNotEmpty,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
-import { JWS } from 'node-jose';
 
-export class RegisterUserDto {
+export class RegisterRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()
@@ -20,10 +20,23 @@ export class RegisterUserDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  username: string;
+  fullName: string;
+
+  @ApiProperty()
+  @IsMobilePhone()
+  @IsNotEmpty()
+  phone: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  address: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  dob: Date;
 }
 
-export class LoginUserDto {
+export class LoginRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()
@@ -34,60 +47,11 @@ export class LoginUserDto {
   password: string;
 }
 
-export class LoginResponseDto {
-  @IsNotEmpty()
-  token: JWS.CreateSignResult;
-
-  @IsNotEmpty()
-  message: string;
-}
-
-export class VerifyEmailDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  token: string;
-}
-
-export class ResendEmailDto {
+export class ValidateRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()
   email: string;
-}
-
-export class ForgotPasswordDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
-}
-
-export class ResetPasswordDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  token: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsStrongPassword()
-  new_password: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsStrongPassword()
-  confirm_password: string;
 }
 
 export class RefreshTokenRequestDto {

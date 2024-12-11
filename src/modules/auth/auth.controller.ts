@@ -1,18 +1,10 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
-import {
-  ForgotPasswordDto,
-  LoginUserDto,
-  RegisterUserDto,
-  ResendEmailDto,
-  ResetPasswordDto,
-  VerifyEmailDto,
-} from './dto/auth.dto';
+import { LoginRequestDto, RegisterRequestDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { BaseController } from 'src/vendors/base';
-import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController extends BaseController {
@@ -23,39 +15,39 @@ export class AuthController extends BaseController {
     super();
   }
 
-  // @ApiTags('Auth')
-  // @Post('register')
-  // @ApiOperation({
-  //   summary: 'Register account',
-  //   description: 'Register user account with email, username and password',
-  // })
-  // @ApiResponse({ status: 201, description: 'Success' })
-  // async register(@Body() registerUserDto: RegisterUserDto) {
-  //   return this.response(await this.authService.register(registerUserDto));
-  // }
+  @ApiTags('Auth')
+  @Post('register')
+  @ApiOperation({
+    summary: 'Register account',
+    description: 'Register user account with email, username and password',
+  })
+  @ApiResponse({ status: 201, description: 'Success' })
+  async register(@Body() registerRequestDto: RegisterRequestDto) {
+    return this.response(await this.authService.register(registerRequestDto));
+  }
 
-  // @ApiTags('Auth')
-  // @Post('login')
-  // @ApiOperation({
-  //   summary: 'Login account',
-  //   description: 'Login user account with email and password',
-  // })
-  // @ApiResponse({
-  //   status: 201,
-  //   description: 'Success',
-  //   headers: { 'Set-Cookie': { description: 'Set JWT cookie for user' } },
-  // })
-  // async login(
-  //   @Body() loginUserDto: LoginUserDto,
-  //   @Res({ passthrough: true }) response: Response,
-  // ) {
-  //   const { token, message } = await this.authService.login(loginUserDto);
-  //   response.cookie('token', token, {
-  //     httpOnly: true,
-  //     domain: this.configService.get<string>('DOMAIN') || 'localhost',
-  //   });
-  //   return this.response(message);
-  // }
+  @ApiTags('Auth')
+  @Post('login')
+  @ApiOperation({
+    summary: 'Login account',
+    description: 'Login user account with email and password',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Success',
+    headers: { 'Set-Cookie': { description: 'Set refresh token for user' } },
+  })
+  async login(
+    @Body() loginUserDto: LoginRequestDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const token = await this.authService.login(loginUserDto);
+    response.cookie('refreshToken', token.refreshToken, {
+      httpOnly: true,
+      domain: this.configService.get<string>('DOMAIN') || 'localhost',
+    });
+    return this.response({ accessToken: token.accessToken });
+  }
 
   // @ApiTags('Auth')
   // @Post('confirm')
