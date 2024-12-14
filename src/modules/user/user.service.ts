@@ -5,11 +5,13 @@ import { Model } from 'mongoose';
 import { EmailToken, EmailTokenDocument } from 'src/schemas/email-token.schema';
 import { ResetToken, ResetTokenDocument } from 'src/schemas/reset-token.schema';
 import { User, UserDocument } from 'src/schemas/user.schema';
+import { AccountService } from '../account/account.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly configService: ConfigService,
+    private readonly accountServive: AccountService,
     @InjectModel(User.name, 'users') private userModel: Model<UserDocument>,
     @InjectModel(EmailToken.name, 'users')
     private emailTokenModel: Model<EmailTokenDocument>,
@@ -19,12 +21,18 @@ export class UserService {
   async findOneByEmail(email: string) {
     return await this.userModel.findOne({ email: email });
   }
+
   async createUser(data: object) {
     const user = new this.userModel(data);
+    const account = await this.accountServive.createAccountForUser(
+      user._id.toString(),
+    );
+    user.account = account._id;
     return await user.save();
   }
+
   async getProfile(user: any) {
-    return await this.userModel.findById(user.id).select('-password');
+    return await this.userModel.findById(user.id).select('-password -account');
   }
   // create(createUserDto: CreateUserDto) {
   //   return 'This action adds a new user';

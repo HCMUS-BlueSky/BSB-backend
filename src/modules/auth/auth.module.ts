@@ -3,27 +3,18 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 // import { MailModule } from 'src/services/mail/mail.module';
-import { UserService } from '../user/user.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { EmailToken, EmailTokenSchema } from 'src/schemas/email-token.schema';
-import { ResetToken, ResetTokenSchema } from 'src/schemas/reset-token.schema';
-import { User, UserSchema } from 'src/schemas/user.schema';
+import { AccountModule } from '../account/account.module';
+import { UserModule } from '../user/user.module';
 
 @Global()
 @Module({
   imports: [
     JwtModule,
-    MongooseModule.forFeature(
-      [
-        { name: User.name, schema: UserSchema },
-        { name: EmailToken.name, schema: EmailTokenSchema },
-        { name: ResetToken.name, schema: ResetTokenSchema },
-      ],
-      'users',
-    ),
     // MailModule,
+    AccountModule,
+    UserModule,
   ],
-  providers: [AuthService, UserService],
+  providers: [AuthService],
   controllers: [AuthController],
   exports: [AuthService],
 })

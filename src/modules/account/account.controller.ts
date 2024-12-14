@@ -5,16 +5,16 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { AccountService } from './account.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BaseController } from 'src/vendors/base';
 
-@Controller('user')
+@Controller('account')
 @UseGuards(AuthGuard)
-export class UserController extends BaseController {
-  constructor(private readonly userService: UserService) {
+export class AccountController extends BaseController {
+  constructor(private readonly accountService: AccountService) {
     super();
   }
 
@@ -32,13 +32,13 @@ export class UserController extends BaseController {
   @HttpCode(HttpStatus.OK)
   @IsForceLogin(true)
   @ApiOperation({
-    summary: 'Get user information',
-    description: 'Get information of currently logged in user',
+    summary: 'Get bank account information',
+    description: 'Get bank account inforamation of current logged in user',
   })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiBearerAuth()
   async getProfile(@AuthUser() user: any) {
-    return this.response(await this.userService.getProfile(user));
+    return this.response(await this.accountService.getAccount(user));
   }
 
   // @Patch(':id')
