@@ -4,3 +4,14 @@ export enum ROLES {
   EMPLOYEE = 'EMPLOYEE',
   GUEST = 'GUEST',
 }
+
+export enum TRANSACTION_STATUS {
+  PENDING = 'PENDING',
+  FULFILLED = 'FULFILLED',
+  REJECTED = 'REJECTED',
+}
+
+export enum PAYER {
+  SENDER = 'SENDER',
+  RECEIVER = 'RECEIVER',
+}
