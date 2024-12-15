@@ -43,9 +43,15 @@ export class AccountService {
   //   return `This action returns all user`;
   // }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} user`;
-  // }
+  async getUserInfoByAccountNumber(accountNumber: string) {
+    const account = await this.accountModel
+      .findOne({
+        accountNumber: accountNumber,
+      })
+      .populate('owner', 'email fullName phone')
+      .select('owner');
+    return account.owner;
+  }
 
   // update(id: number, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;

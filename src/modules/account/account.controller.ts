@@ -4,6 +4,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Param,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
@@ -41,10 +42,22 @@ export class AccountController extends BaseController {
     return this.response(await this.accountService.getAccount(user));
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
+  @Get(':accountNumber/info')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Get user info by account number',
+    description: 'Get user info by account number',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getUserInfoByAccountNumber(
+    @Param('accountNumber') accountNumber: string,
+  ) {
+    return this.response(
+      await this.accountService.getUserInfoByAccountNumber(accountNumber),
+    );
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {
