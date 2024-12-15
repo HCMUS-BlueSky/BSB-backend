@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { ROLES } from 'src/common/constants';
+import { Receiver } from './receiver.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -29,6 +30,9 @@ export class User {
 
   @Prop({ type: Types.ObjectId, ref: 'Account' })
   account: Types.ObjectId;
+
+  @Prop({ type: [Types.ObjectId], ref: 'Receiver' })
+  receiverList: Receiver[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

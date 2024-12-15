@@ -4,8 +4,13 @@ export enum ErrorMessage {
   EMPTY_TOKEN = 'Empty token',
   NOT_BEFORE = 'Current time is before the nbf claim',
   USER_EXISTED = 'This email has already been registered',
-  INVALID_USER = "This account doesn't exist",
+  INVALID_USER = "This user doesn't exist",
   WRONG_PASSWORD = 'Incorrect password',
+  ACCOUNT_NOT_EXIST = "This account number doesn\'t exist",
+  NOT_IMPLEMENTED = 'Not implemented',
+  RECEIVER_IS_SAME = 'Receiver is same as user',
+  RECEIVER_EXISTED = 'Receiver is already in list',
+  RECEIVER_NOT_EXISTED = 'Receiver not exist',
 }
 
 export enum GenericErrorMessage {

@@ -15,3 +15,8 @@ export enum PAYER {
   SENDER = 'SENDER',
   RECEIVER = 'RECEIVER',
 }
+
+export enum RECEIVER_TYPE {
+  INTERNAL = 'INTERNAL',
+  EXTERNAL = 'EXTERNAL',
+}
