@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User, UserDocument } from './user.schema';
+import { ACCOUNT_TYPE } from 'src/common/constants';
+import { Bank, BankDocument } from './bank.schema';
 
 export type AccountDocument = HydratedDocument<Account>;
 
@@ -17,6 +19,12 @@ export class Account {
 
   @Prop({ type: String, default: 'ACTIVE' })
   status: string;
+
+  @Prop({ default: ACCOUNT_TYPE.INTERNAL, enum: ACCOUNT_TYPE })
+  type: string;
+
+  @Prop({ type: Types.ObjectId, ref: Bank.name })
+  externalBank: BankDocument;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

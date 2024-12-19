@@ -11,6 +11,13 @@ export enum ErrorMessage {
   RECEIVER_IS_SAME = 'Receiver is same as user',
   RECEIVER_EXISTED = 'Receiver is already in list',
   RECEIVER_NOT_EXISTED = 'Receiver not exist',
+  INSUFFICIENT_BALANCE = 'Insufficient balance',
+  ACCOUNT_IS_DISABLED = 'Account is disabled',
+  RECEIVER_IS_DISABLED = 'Receiver is disabled',
+  ON_GOING_TRANSACTION = 'There is an on-going transaction',
+  INVALID_OTP = 'Invalid OTP',
+  OTP_EXPIRED = 'OTP expired',
+  INVALID_TRANSACTION = 'Invalid transaction',
 }
 
 export enum GenericErrorMessage {

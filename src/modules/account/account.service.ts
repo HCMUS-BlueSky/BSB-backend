@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
+import { ACCOUNT_TYPE } from 'src/common/constants';
 
 @Injectable()
 export class AccountService {
@@ -33,7 +34,10 @@ export class AccountService {
     return accountNumber;
   }
   async getAccount(user: any) {
-    return await this.accountModel.findOne({ owner: user.id });
+    return await this.accountModel.findOne({
+      owner: user.id,
+      type: ACCOUNT_TYPE.INTERNAL,
+    });
   }
   // create(createUserDto: CreateUserDto) {
   //   return 'This action adds a new user';
@@ -47,6 +51,7 @@ export class AccountService {
     const account = await this.accountModel
       .findOne({
         accountNumber: accountNumber,
+        type: ACCOUNT_TYPE.INTERNAL,
       })
       .populate('owner', 'email fullName phone')
       .select('owner');

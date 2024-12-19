@@ -20,3 +20,20 @@ export enum RECEIVER_TYPE {
   INTERNAL = 'INTERNAL',
   EXTERNAL = 'EXTERNAL',
 }
+
+export enum ACCOUNT_TYPE {
+  INTERNAL = 'INTERNAL',
+  EXTERNAL = 'EXTERNAL',
+}
+
+export enum TRANSACTION_TYPE {
+  INTERNAL = 'INTERNAL',
+  EXTERNAL = 'EXTERNAL',
+}
+
+export enum FEE {
+  PERCENTAGE = 0.01,
+  MAX = 100000,
+}
+
+export const OTP_EXPIRED_TIME = 3 * 60 * 60 * 1000; // 3 hours

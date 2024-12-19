@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { ROLES } from 'src/common/constants';
 import { Receiver } from './receiver.schema';
+import { AccountDocument } from './account.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -29,7 +30,7 @@ export class User {
   role: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Account' })
-  account: Types.ObjectId;
+  account: Types.ObjectId | AccountDocument;
 
   @Prop({ type: [Types.ObjectId], ref: 'Receiver' })
   receiverList: Receiver[];

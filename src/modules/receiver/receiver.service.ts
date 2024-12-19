@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { Receiver, ReceiverDocument } from 'src/schemas/receiver.schema';
-import { RECEIVER_TYPE } from 'src/common/constants';
+import { ACCOUNT_TYPE, RECEIVER_TYPE } from 'src/common/constants';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
 import { ErrorMessage, SuccessMessage } from 'src/common/messages';
 
@@ -25,6 +25,7 @@ export class ReceiverService {
       const associatedAccount = await this.accountModel
         .findOne({
           accountNumber: data.accountNumber,
+          type: ACCOUNT_TYPE.INTERNAL,
         })
         .populate('owner', 'fullName');
 

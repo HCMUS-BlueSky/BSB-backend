@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { Account } from './account.schema';
-import { PAYER, TRANSACTION_STATUS } from 'src/common/constants';
+import {
+  PAYER,
+  TRANSACTION_STATUS,
+  TRANSACTION_TYPE,
+} from 'src/common/constants';
 
 export type TransactionDocument = HydratedDocument<Transaction>;
 
@@ -13,7 +17,7 @@ export class Transaction {
   @Prop({ type: Types.ObjectId, ref: Account.name, required: true })
   receiver: Types.ObjectId;
 
-  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  @Prop({ type: Number, required: true, min: 100, default: 0 })
   amount: number;
 
   @Prop({ default: TRANSACTION_STATUS.PENDING, enum: TRANSACTION_STATUS })
@@ -22,7 +26,7 @@ export class Transaction {
   @Prop({ type: String, trim: true })
   description: string;
 
-  @Prop({ type: String, trim: true })
+  @Prop({ default: TRANSACTION_TYPE.INTERNAL, enum: TRANSACTION_TYPE })
   type: string;
 
   @Prop({ type: Number, min: 0, default: 0 })
