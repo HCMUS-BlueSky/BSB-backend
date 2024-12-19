@@ -103,10 +103,19 @@ export class TransactionController extends BaseController {
       ),
     );
   }
-  // @Get()
-  // findAll() {
-  //   return this.transactionService.findAll();
-  // }
+
+  @Get('/history')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Get transaction history',
+    description: 'Get transaction history',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getHistory(@AuthUser() user: any) {
+    return this.response(await this.transactionService.getHistory(user));
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

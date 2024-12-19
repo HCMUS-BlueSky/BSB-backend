@@ -251,4 +251,20 @@ export class TransactionService {
     await this.transactionModel.findByIdAndDelete(transactionID);
     return SuccessMessage.SUCCESS;
   }
+
+  async getHistory(user: any) {
+    const currentAccount = await this.accountModel.findOne({ owner: user.id });
+    if (!currentAccount) {
+      throw new BadRequestException(ErrorMessage.INVALID_USER);
+    }
+    const outTransaction = await this.transactionModel.find({
+      sender: currentAccount._id,
+      status: TRANSACTION_STATUS.FULFILLED,
+    });
+    const inTransaction = await this.transactionModel.find({
+      receiver: currentAccount.id,
+      status: TRANSACTION_STATUS.FULFILLED,
+    });
+    return [...outTransaction, ...inTransaction];
+  }
 }
