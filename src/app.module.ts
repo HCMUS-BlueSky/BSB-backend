@@ -6,6 +6,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AccountModule } from './modules/account/account.module';
 import { ReceiverModule } from './modules/receiver/receiver.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { RecaptchaModule } from './modules/recaptcha/recaptcha.module';
+import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 
 @Module({
   imports: [
@@ -21,11 +23,17 @@ import { TransactionModule } from './modules/transaction/transaction.module';
         uri: config.get<string>('MONGODB_URL'),
       }),
     }),
+    GoogleRecaptchaModule.forRoot({
+      debug: true,
+      secretKey: process.env.RECAPTCHA_SECRET_KEY, // Lấy từ .env
+      response: (req) => req.headers.recaptcha,
+    }),
     AccountModule,
     UserModule,
     AuthModule,
     ReceiverModule,
     TransactionModule,
+    RecaptchaModule,
   ],
   controllers: [],
   providers: [],

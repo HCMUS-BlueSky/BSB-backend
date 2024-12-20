@@ -5,6 +5,7 @@ import { BaseController } from 'src/vendors/base';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Recaptcha } from '@nestlab/google-recaptcha';
 
 @Controller('auth')
 export class AuthController extends BaseController {
@@ -37,6 +38,7 @@ export class AuthController extends BaseController {
     description: 'Success',
     headers: { 'Set-Cookie': { description: 'Set refresh token for user' } },
   })
+  @Recaptcha()
   async login(
     @Body() loginUserDto: LoginRequestDto,
     @Res({ passthrough: true }) response: Response,
