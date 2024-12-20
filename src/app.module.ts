@@ -22,10 +22,13 @@ import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
         uri: config.get<string>('MONGODB_URL'),
       }),
     }),
-    GoogleRecaptchaModule.forRoot({
-      debug: true,
-      secretKey: process.env.RECAPTCHA_SECRET_KEY, // Lấy từ .env
-      response: (req) => req.headers.recaptcha,
+    GoogleRecaptchaModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secretKey: config.get<string>('RECAPTCHA_SECRET_KEY'),
+        response: (req) => req.headers.recaptcha,
+      }),
     }),
     AccountModule,
     UserModule,
