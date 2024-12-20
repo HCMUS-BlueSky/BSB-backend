@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AccountModule } from './modules/account/account.module';
 import { ReceiverModule } from './modules/receiver/receiver.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 
 @Module({
   imports: [
@@ -19,6 +20,14 @@ import { TransactionModule } from './modules/transaction/transaction.module';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         uri: config.get<string>('MONGODB_URL'),
+      }),
+    }),
+    GoogleRecaptchaModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secretKey: config.get<string>('RECAPTCHA_SECRET_KEY'),
+        response: (req) => req.headers.recaptcha,
       }),
     }),
     AccountModule,
