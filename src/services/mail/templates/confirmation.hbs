@@ -1,15 +1,88 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm transaction</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xác Nhận Giao Dịch</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .verification-code {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin: 20px 0;
+    }
+    .note {
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <p>Hello {{fullName}}</p>
-        <p>{{otp}}</p>
-    </div>
+  <div class="container">
+    <p>Xin chào {{fullName}},</p>
+    <p>Để hoàn tất giao dịch của bạn, vui lòng nhập mã xác nhận sau vào trang xác nhận:</p>
+    <p class="verification-code">{{otp}}</p>
+    <p>Mã xác nhận này sẽ hết hạn sau 3 giờ kể từ khi email này được gửi đi.</p>
+    <h4>Tại sao bạn nhận được email này:</h4>
+    <p class="note">BSB yêu cầu xác nhận cho bất kỳ giao dịch nào bạn thực hiện.</p>
+    <p class="note">Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.</p>
+  </div>
 </body>
 </html>
 
+{{!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Transaction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .verification-code {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin: 20px 0;
+    }
+    .note {
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p>Dear {{fullName}},</p>
+    <p>To complete your transaction, please enter the following code on the confirmation page:</p>
+    <p class="verification-code">{{otp}}</p>
+    <p>This code will expire three hours after this email was sent.</p>
+    <h4>Why you received this email:</h4>
+    <p class="note">BSB requires verification for any transaction you make.</p>
+    <p class="note">If you did not make this request, you can ignore this email.</p>
+  </div>
+</body>
+</html>
+
+ --}}
