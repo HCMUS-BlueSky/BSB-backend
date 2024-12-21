@@ -38,7 +38,7 @@ export class AuthController extends BaseController {
     description: 'Success',
     headers: { 'Set-Cookie': { description: 'Set refresh token for user' } },
   })
-  // @Recaptcha()
+  @Recaptcha()
   async login(
     @Body() loginUserDto: LoginRequestDto,
     @Res({ passthrough: true }) response: Response,
