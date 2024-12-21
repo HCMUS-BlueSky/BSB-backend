@@ -20,10 +20,10 @@ export class RemindService {
     private accountModel: Model<Account>,
   ) {}
   async create(createRemindDto: CreateRemindDto, user: any) {
-    const data = Object.assign({}, createRemindDto);
+    const { remindUserAccount, remindMessage, amount } = createRemindDto;
 
     const ownerAccount = await this.accountModel.findOne({
-      accountNumber: data.remindUserAccount,
+      accountNumber: remindUserAccount,
     });
 
     if (!ownerAccount) {
@@ -33,10 +33,11 @@ export class RemindService {
     const newRemind = {
       from: user.id,
       to: ownerAccount.owner,
-      remindMessage: data.remindMessage,
-      amount: data.amount,
+      remindMessage,
+      amount,
     };
     await this.remindModel.create(newRemind);
+
     return SuccessMessage.SUCCESS;
   }
 
@@ -49,19 +50,23 @@ export class RemindService {
   //   date: "9/12/2024",
   // },
   async findAllReminders(user: any) {
-    const remindersFrom = await this.remindModel.find({ from: user.id });
-    const remindersTo = await this.remindModel.find({ to: user.id });
-    const reminders = [...remindersFrom, ...remindersTo];
+    const reminders = await this.remindModel.find({
+      $or: [{ from: user.id }, { to: user.id }],
+    });
 
     const dataResponse = await Promise.all(
       reminders.map(async (remind) => {
-        const remindUser = await this.userModel.findById(remind.to);
+        const isSender = remind.from === user.id;
+
+        const targetUserId = isSender ? remind.to : remind.from;
+        const targetUser = await this.userModel.findById(targetUserId);
+
         return {
-          name: remindUser?.fullName || 'Unknown User',
+          name: targetUser?.fullName || 'Unknown User',
           profilePic:
             'https://my.timo.vn/static/media/default_avatar.32a9a6f8.svg',
           amount: remind.amount,
-          direction: remind.from === user.id ? 'tới' : 'từ',
+          direction: isSender ? 'tới' : 'từ',
           date: remind.createdAt,
           status: remind.remindStatus,
         };
