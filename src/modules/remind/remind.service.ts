@@ -1,7 +1,6 @@
 import { User } from 'src/schemas/user.schema';
 import { Injectable } from '@nestjs/common';
 import { CreateRemindDto } from './dto/create-remind.dto';
-import { UpdateRemindDto } from './dto/update-remind.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Remind, RemindDocument } from 'src/schemas/remind.schema';
 import { Model } from 'mongoose';

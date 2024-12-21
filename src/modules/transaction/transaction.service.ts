@@ -257,14 +257,21 @@ export class TransactionService {
     if (!currentAccount) {
       throw new BadRequestException(ErrorMessage.INVALID_USER);
     }
-    const outTransaction = await this.transactionModel.find({
-      sender: currentAccount._id,
-      status: TRANSACTION_STATUS.FULFILLED,
-    });
-    const inTransaction = await this.transactionModel.find({
-      receiver: currentAccount.id,
-      status: TRANSACTION_STATUS.FULFILLED,
-    });
-    return [...outTransaction, ...inTransaction];
+    const transactions = await this.transactionModel
+      .find({
+        $or: [{ sender: currentAccount._id }, { receiver: currentAccount.id }],
+        status: TRANSACTION_STATUS.FULFILLED,
+      })
+      .populate({
+        path: 'receiver',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'sender',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
+    return transactions;
   }
 }
