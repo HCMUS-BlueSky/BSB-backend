@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
-import { LoginRequestDto, RegisterRequestDto } from './dto/auth.dto';
+import { LoginRequestDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { BaseController } from 'src/vendors/base';
 import { ConfigService } from '@nestjs/config';
@@ -14,17 +14,6 @@ export class AuthController extends BaseController {
     private readonly configService: ConfigService,
   ) {
     super();
-  }
-
-  @ApiTags('Auth')
-  @Post('register')
-  @ApiOperation({
-    summary: 'Register account',
-    description: 'Register user account with email, username and password',
-  })
-  @ApiResponse({ status: 201, description: 'Success' })
-  async register(@Body() registerRequestDto: RegisterRequestDto) {
-    return this.response(await this.authService.register(registerRequestDto));
   }
 
   @ApiTags('Auth')

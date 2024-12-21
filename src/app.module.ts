@@ -8,6 +8,7 @@ import { ReceiverModule } from './modules/receiver/receiver.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 import { RemindModule } from './modules/remind/remind.module';
+import { EmployeeModule } from './modules/employee/employee.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { RemindModule } from './modules/remind/remind.module';
     ReceiverModule,
     TransactionModule,
     RemindModule,
+    EmployeeModule,
   ],
   controllers: [],
   providers: [],
