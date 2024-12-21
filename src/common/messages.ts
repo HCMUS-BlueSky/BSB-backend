@@ -18,6 +18,7 @@ export enum ErrorMessage {
   INVALID_OTP = 'Invalid OTP',
   OTP_EXPIRED = 'OTP expired',
   INVALID_TRANSACTION = 'Invalid transaction',
+  INVALID_USER_REMIND = 'Invalid user remind',
 }
 
 export enum GenericErrorMessage {
