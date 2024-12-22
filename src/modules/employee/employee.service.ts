@@ -76,4 +76,16 @@ export class EmployeeService {
       });
     return accounts.filter((account) => account.owner);
   }
+
+  async getAccountById(id: string) {
+    const account = await this.accountModel.findById(id).populate({
+      path: 'owner',
+      select: '-password -receiverList',
+      match: { role: 'CUSTOMER' },
+    });
+    if (!account.owner) {
+      throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+    }
+    return account;
+  }
 }

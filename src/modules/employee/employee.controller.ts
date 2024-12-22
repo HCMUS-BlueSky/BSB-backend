@@ -6,6 +6,7 @@ import {
   Post,
   Body,
   Get,
+  Param,
 } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
@@ -68,7 +69,7 @@ export class EmployeeController extends BaseController {
     summary: 'Top up user account',
     description: 'Top up user account with amount',
   })
-  @ApiResponse({ status: 201, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiBearerAuth()
   async history(@Body() accountHistoryDto: AccountHistoryDto) {
     return this.response(
@@ -84,10 +85,24 @@ export class EmployeeController extends BaseController {
     summary: 'Top up user account',
     description: 'Top up user account with amount',
   })
-  @ApiResponse({ status: 201, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiBearerAuth()
   async getAccountList() {
     return this.response(await this.employeeService.getAccountList());
+  }
+
+  @Get('account/:id')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.EMPLOYEE, ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Get user account by id',
+    description: 'Get user account by id',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getAccountById(@Param('id') id: string) {
+    return this.response(await this.employeeService.getAccountById(id));
   }
   // @Get()
   // findAll() {

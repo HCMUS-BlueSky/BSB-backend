@@ -8,6 +8,7 @@ import { User, UserSchema } from 'src/schemas/user.schema';
 import { Transaction, TransactionSchema } from 'src/schemas/transaction.schema';
 import { OTP, OTPSchema } from 'src/schemas/otp.schema';
 import { MailModule } from 'src/services/mail/mail.module';
+import { EncryptionModule } from 'src/services/encryption/encryption.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MailModule } from 'src/services/mail/mail.module';
       'users',
     ),
     MailModule,
+    EncryptionModule,
   ],
   controllers: [TransactionController],
   providers: [TransactionService],
