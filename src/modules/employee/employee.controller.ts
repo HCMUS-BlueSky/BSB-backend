@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Post,
   Body,
+  Get,
 } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
@@ -53,8 +54,10 @@ export class EmployeeController extends BaseController {
   })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiBearerAuth()
-  topUp(@Body() topUpAccountDto: TopUpAccountDto) {
-    return this.employeeService.topUpAccount(topUpAccountDto);
+  async topUp(@Body() topUpAccountDto: TopUpAccountDto) {
+    return this.response(
+      await this.employeeService.topUpAccount(topUpAccountDto),
+    );
   }
 
   @Post('accountHistory')
@@ -67,8 +70,24 @@ export class EmployeeController extends BaseController {
   })
   @ApiResponse({ status: 201, description: 'Success' })
   @ApiBearerAuth()
-  history(@Body() accountHistoryDto: AccountHistoryDto) {
-    return this.employeeService.getAccountHistory(accountHistoryDto);
+  async history(@Body() accountHistoryDto: AccountHistoryDto) {
+    return this.response(
+      await this.employeeService.getAccountHistory(accountHistoryDto),
+    );
+  }
+
+  @Get('accountList')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.EMPLOYEE, ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Top up user account',
+    description: 'Top up user account with amount',
+  })
+  @ApiResponse({ status: 201, description: 'Success' })
+  @ApiBearerAuth()
+  async getAccountList() {
+    return this.response(await this.employeeService.getAccountList());
   }
   // @Get()
   // findAll() {

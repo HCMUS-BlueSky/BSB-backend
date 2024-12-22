@@ -11,6 +11,12 @@ export enum TRANSACTION_STATUS {
   REJECTED = 'REJECTED',
 }
 
+export enum REMIND_STATUS {
+  PENDING = 'pending',
+  FULFILLED = 'fulfilled',
+  REJECTED = 'rejected',
+}
+
 export enum PAYER {
   SENDER = 'SENDER',
   RECEIVER = 'RECEIVER',

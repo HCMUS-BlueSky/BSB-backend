@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { REMIND_STATUS } from 'src/common/constants';
 
 export type RemindDocument = HydratedDocument<Remind>;
 
@@ -14,7 +15,7 @@ export class Remind {
   @Prop({ type: String })
   remindMessage: string;
 
-  @Prop({ type: String, required: true, default: 'pending' })
+  @Prop({ default: REMIND_STATUS.PENDING, enum: REMIND_STATUS })
   remindStatus: string;
 
   @Prop({ type: Number, required: true })

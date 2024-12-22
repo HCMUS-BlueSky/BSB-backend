@@ -5,7 +5,7 @@ import { TopUpAccountDto } from './dto/topup-account.dto';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
 import { ErrorMessage, SuccessMessage } from 'src/common/messages';
 import { AccountHistoryDto } from './dto/account-history.dto';
-import { TRANSACTION_STATUS } from 'src/common/constants';
+import { ACCOUNT_TYPE, TRANSACTION_STATUS } from 'src/common/constants';
 import {
   Transaction,
   TransactionDocument,
@@ -62,5 +62,18 @@ export class EmployeeService {
         populate: { path: 'owner', select: 'fullName -_id' },
       });
     return transactions;
+  }
+
+  async getAccountList() {
+    const accounts = await this.accountModel
+      .find({
+        type: ACCOUNT_TYPE.INTERNAL,
+      })
+      .populate({
+        path: 'owner',
+        select: '-password -receiverList',
+        match: { role: 'CUSTOMER' },
+      });
+    return accounts;
   }
 }
