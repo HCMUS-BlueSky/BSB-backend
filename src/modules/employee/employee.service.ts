@@ -73,9 +73,7 @@ export class EmployeeService {
         path: 'owner',
         select: '-password -receiverList',
         match: { role: 'CUSTOMER' },
-      })
-      .where('owner')
-      .ne(null);
-    return accounts;
+      });
+    return accounts.filter((account) => account.owner);
   }
 }
