@@ -7,6 +7,8 @@ import {
   Body,
   Get,
   Param,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
@@ -20,6 +22,7 @@ import { Roles } from 'src/vendors/decorators/role.decorator';
 import { ROLES } from 'src/common/constants';
 import { TopUpAccountDto } from './dto/topup-account.dto';
 import { AccountHistoryDto } from './dto/account-history.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Controller('employee')
 @UseGuards(AuthGuard, RolesGuard)
@@ -29,6 +32,69 @@ export class EmployeeController extends BaseController {
     private readonly authService: AuthService,
   ) {
     super();
+  }
+
+  @Get('')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Get list of employees (ADMIN ONLY)',
+    description: 'Get list of employees (ADMIN ONLY)',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getAllEmployee() {
+    return this.response(await this.employeeService.getAllEmployee());
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Update employee info (ADMIN ONLY)',
+    description: 'Update employee info (ADMIN ONLY)',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async update(
+    @Param('id') id: string,
+    @Body() updateEmployeeDto: UpdateEmployeeDto,
+  ) {
+    return this.response(
+      await this.employeeService.update(id, updateEmployeeDto),
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Delete employee (ADMIN ONLY)',
+    description: 'Delete employee (ADMIN ONLY)',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async remove(@Param('id') id: string) {
+    return this.response(await this.employeeService.remove(id));
+  }
+
+  @Post('')
+  @HttpCode(HttpStatus.CREATED)
+  @IsForceLogin(true)
+  @Roles([ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Register employee account (ADMIN ONLY)',
+    description: 'Register employee account (ADMIN ONLY)',
+  })
+  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiBearerAuth()
+  async registerEmployee(@Body() registerRequestDto: RegisterRequestDto) {
+    return this.response(
+      await this.employeeService.register(registerRequestDto),
+    );
   }
 
   @Post('registerUser')
@@ -41,7 +107,7 @@ export class EmployeeController extends BaseController {
   })
   @ApiResponse({ status: 201, description: 'Created' })
   @ApiBearerAuth()
-  async register(@Body() registerRequestDto: RegisterRequestDto) {
+  async registerUser(@Body() registerRequestDto: RegisterRequestDto) {
     return this.response(await this.authService.register(registerRequestDto));
   }
 

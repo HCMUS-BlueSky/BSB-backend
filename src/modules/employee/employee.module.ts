@@ -7,6 +7,7 @@ import { AccountModule } from '../account/account.module';
 import { AuthModule } from '../auth/auth.module';
 import { Account, AccountSchema } from 'src/schemas/account.schema';
 import { Transaction, TransactionSchema } from 'src/schemas/transaction.schema';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Transaction, TransactionSchema } from 'src/schemas/transaction.schema';
       ],
       'users',
     ),
+    UserModule,
     AuthModule,
     AccountModule,
   ],

@@ -9,6 +9,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
 import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 import { RemindModule } from './modules/remind/remind.module';
 import { EmployeeModule } from './modules/employee/employee.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { EmployeeModule } from './modules/employee/employee.module';
     TransactionModule,
     RemindModule,
     EmployeeModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],
