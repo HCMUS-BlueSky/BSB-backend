@@ -21,6 +21,18 @@ export class MailService {
     });
   }
 
+  async sendForgetPasswordEmail( resetPasswordUrl: string,user: UserDocument) {
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'BSB | Password Reset Request',
+      template: './forget-password',
+      context: {
+        fullName:user.fullName,
+        resetPasswordUrl,
+      },
+    });
+  }
+
   // async sendResetPwd(user: UserEntity, token: string) {
   //   const url = `${process.env.URL}/auth/reset-password?token=${token}`;
 
