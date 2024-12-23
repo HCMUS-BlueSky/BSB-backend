@@ -1,13 +1,18 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { LoginRequestDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { BaseController } from 'src/vendors/base';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Recaptcha } from '@nestlab/google-recaptcha';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
+import { AuthGuard } from 'src/vendors/guards/auth.guard';
 
 @Controller('auth')
+@UseGuards(AuthGuard)
 export class AuthController extends BaseController {
   constructor(
     private readonly authService: AuthService,
@@ -38,6 +43,39 @@ export class AuthController extends BaseController {
       domain: this.configService.get<string>('DOMAIN') || 'localhost',
     });
     return this.response({ accessToken: token.accessToken });
+  }
+
+  @Put('change-password')
+  @ApiOperation({
+    summary: 'Change password',
+    description: 'Change user account password',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  @IsForceLogin(true)
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @AuthUser() user: any,
+  ) {
+  
+    return this.response(
+      await this.authService.changePassword( changePasswordDto,user),
+    );
+  }
+
+  @Post('forget-password')
+  @ApiOperation({
+    summary: 'Forgot password',
+    description: 'Generate and send reset password email',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+  })
+  async forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
+    return this.response(
+      await this.authService.forgetPassword(forgetPasswordDto),
+    );
   }
 
   // @ApiTags('Auth')

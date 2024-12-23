@@ -10,6 +10,13 @@ import { compareSync, genSalt, hash } from 'bcrypt';
 import { ErrorMessage, SuccessMessage } from 'src/common/messages';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from 'src/schemas/user.schema';
+import { Model } from 'mongoose';
+import { MailService } from 'src/services/mail/mail.service';
+
 // import { MailService } from '../../../services/mail/mail.service';
 // import { UserDto } from '../user/dto/user.dto';
 // import { uuid } from 'uuidv4';
@@ -23,6 +30,10 @@ export class AuthService {
 
     // private readonly mailService: MailService,
     // private readonly authRedisService: AuthRedis,
+    private readonly mailService: MailService,
+
+    @InjectModel(User.name, 'users')
+    private userModel: Model<UserDocument>,
   ) {}
 
   async register(data: RegisterRequestDto) {
@@ -146,6 +157,47 @@ export class AuthService {
     });
     return { refreshToken };
   }
+
+  async changePassword(changePasswordDto: ChangePasswordDto,
+    user:any
+  ): Promise<void> {
+
+    const { oldPassword, newPassword } = changePasswordDto;
+    const account = await this.userModel
+    .findById(user.id)
+    .populate('account');
+
+    if (!account) {
+      throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+    }
+
+    //compare pwd
+    await this.comparePassword(oldPassword, account.password);
+
+    account.password = await hash(newPassword, 10);
+    await account.save();
+  }
+
+  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<void> {
+    const { email } = forgetPasswordDto;
+    const user = await this.userModel.findOne({ email });
+    
+
+    if (!user) {
+      throw new BadRequestException(ErrorMessage.EMAIL_NOT_ASSOCIATED);
+    }
+
+    const { accessToken }=this.generateAccessToken({
+      id: user.id,
+      role: user.role,
+    });
+
+
+    const resetPasswordUrl = `${this.configService.get<string>('FRONTEND_BASE_URL')}/change-password?token=${accessToken}`;
+
+    await this.mailService.sendForgetPasswordEmail(resetPasswordUrl, user );
+  }
+
 
   // private generateResetPasswordToken(payload: any) {
   //   const resetPasswordToken = this.jwtService.sign(payload, {
