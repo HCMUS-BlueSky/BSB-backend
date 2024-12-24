@@ -1,4 +1,4 @@
-import { User } from 'src/schemas/user.schema';
+import { User, UserDocument } from 'src/schemas/user.schema';
 import { Injectable } from '@nestjs/common';
 import { CreateRemindDto } from './dto/create-remind.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -159,28 +159,37 @@ export class RemindService {
     if (!remind) {
       throw new BadRequestException(ErrorMessage.INVALID_REMIND);
     }
-    if (remind.from == currentUser.account) {
-      const toUser = await this.userModel.findById(remind.to);
+
+    if (remind.from.toString() == currentUser.account.toString()) {
+      const toAccount = await this.accountModel
+        .findById(remind.to)
+        .populate('owner')
+        .select('owner');
+      const toUser = toAccount.owner as UserDocument;
       const notification = new this.notificationModel({
         title: CustomMessages.CANCEL_PAYMENT_REQUEST,
         content: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
         for: toUser.id,
       });
-      // await notification.save();
+      await notification.save();
       await this.notificationService.emit(notification);
       await this.remindModel.findOneAndDelete({
         _id: id,
         from: currentUser.account,
         status: REMIND_STATUS.PENDING,
       });
-    } else if (remind.to == currentUser.account) {
-      const fromUser = await this.userModel.findById(remind.from);
+    } else if (remind.to.toString() == currentUser.account.toString()) {
+      const fromAccount = await this.accountModel
+        .findById(remind.from)
+        .populate('owner')
+        .select('owner');
+      const fromUser = fromAccount.owner as UserDocument;
       const notification = new this.notificationModel({
         title: CustomMessages.CANCEL_PAYMENT_REQUEST,
         content: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
         for: fromUser.id,
       });
-      // await notification.save();
+      await notification.save();
       await this.notificationService.emit(notification);
       await this.remindModel.findOneAndDelete({
         _id: id,
