@@ -12,9 +12,9 @@ export enum TRANSACTION_STATUS {
 }
 
 export enum REMIND_STATUS {
-  PENDING = 'pending',
-  FULFILLED = 'fulfilled',
-  REJECTED = 'rejected',
+  PENDING = 'PENDING',
+  FULFILLED = 'FULFILLED',
+  REJECTED = 'REJECTED',
 }
 
 export enum PAYER {

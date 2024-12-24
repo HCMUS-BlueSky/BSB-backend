@@ -1,28 +1,26 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { REMIND_STATUS } from 'src/common/constants';
+import { Account } from './account.schema';
 
 export type RemindDocument = HydratedDocument<Remind>;
 
 @Schema({ timestamps: true })
 export class Remind {
-  @Prop({ type: String, required: true })
-  from: string;
+  @Prop({ type: Types.ObjectId, ref: Account.name, required: true })
+  from: Types.ObjectId;
 
-  @Prop({ type: String, required: true })
-  to: string;
+  @Prop({ type: Types.ObjectId, ref: Account.name, required: true })
+  to: Types.ObjectId;
 
   @Prop({ type: String })
-  remindMessage: string;
+  message: string;
 
   @Prop({ default: REMIND_STATUS.PENDING, enum: REMIND_STATUS })
-  remindStatus: string;
+  status: string;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true, min: 100, default: 0 })
   amount: number;
-
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export const RemindSchema = SchemaFactory.createForClass(Remind);

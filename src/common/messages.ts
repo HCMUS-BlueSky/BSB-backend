@@ -19,7 +19,8 @@ export enum ErrorMessage {
   OTP_EXPIRED = 'OTP expired',
   INVALID_TRANSACTION = 'Invalid transaction',
   INVALID_USER_REMIND = 'Invalid user remind',
-  EMAIL_NOT_ASSOCIATED='Email not associated with any account',
+  EMAIL_NOT_ASSOCIATED = 'Email not associated with any account',
+  INVALID_REMIND = 'Invalid remind',
 }
 
 export enum GenericErrorMessage {

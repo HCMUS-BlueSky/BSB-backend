@@ -10,7 +10,7 @@ export class MailService {
   async sendTransactionOTP(otp: OTPDocument, user: UserDocument) {
     await this.mailerService.sendMail({
       to: user.email,
-      subject: 'BSB | Transaction OTP',
+      subject: 'BSB | OTP Giao Dịch',
       template: './confirmation', // `.hbs` extension is appended automatically
       context: {
         // ✏️ filling curly brackets with content
@@ -21,13 +21,27 @@ export class MailService {
     });
   }
 
-  async sendForgetPasswordEmail( resetPasswordUrl: string,user: UserDocument) {
+  async sendRemindOTP(otp: OTPDocument, user: UserDocument) {
     await this.mailerService.sendMail({
       to: user.email,
-      subject: 'BSB | Password Reset Request',
+      subject: 'BSB | OTP Thanh Toán Nhắc Nợ',
+      template: './repay', // `.hbs` extension is appended automatically
+      context: {
+        // ✏️ filling curly brackets with content
+        email: user.email,
+        fullName: user.fullName,
+        otp: otp.otp,
+      },
+    });
+  }
+
+  async sendForgetPasswordEmail(resetPasswordUrl: string, user: UserDocument) {
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'BSB | Quên mật khẩu',
       template: './forget-password',
       context: {
-        fullName:user.fullName,
+        fullName: user.fullName,
         resetPasswordUrl,
       },
     });

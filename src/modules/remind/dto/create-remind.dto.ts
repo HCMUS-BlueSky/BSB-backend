@@ -1,17 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateRemindDto {
   @ApiProperty()
   @IsNotEmpty()
-  remindUserAccount: string;
+  @IsNumberString()
+  accountNumber: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  remindMessage: string;
+  @IsString()
+  message: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
+  @Min(100)
   amount: number;
 }
