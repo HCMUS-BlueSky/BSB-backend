@@ -59,9 +59,12 @@ export class RemindService {
         const isSender = remind.from === user.id;
 
         const targetUserId = isSender ? remind.to : remind.from;
-        const targetUser = await this.userModel.findById(targetUserId);
+        const targetUser = await this.userModel
+          .findById(targetUserId)
+          .populate<{ account: Account }>('account');
 
         return {
+          id: remind._id,
           name: targetUser?.fullName || 'Unknown User',
           profilePic:
             'https://my.timo.vn/static/media/default_avatar.32a9a6f8.svg',
@@ -69,11 +72,29 @@ export class RemindService {
           direction: isSender ? 'tới' : 'từ',
           date: remind.createdAt,
           status: remind.remindStatus,
+          email: targetUser.account.accountNumber,
         };
       }),
     );
 
     return dataResponse;
+  }
+
+  async remove(id: string) {
+    await this.remindModel.findByIdAndDelete(id);
+    return SuccessMessage.SUCCESS;
+  }
+
+  async update(id: string) {
+    console.log(id);
+    try {
+      await this.remindModel.findByIdAndUpdate(id, {
+        remindStatus: 'completed',
+      });
+      return SuccessMessage.SUCCESS;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   findAll() {

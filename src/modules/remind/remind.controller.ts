@@ -54,6 +54,30 @@ export class RemindController extends BaseController {
     return this.response(await this.remindService.findAllReminders(user));
   }
 
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Delete reminder',
+    description: 'Delete reminder of current logged in user',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async remove(@Param('id') id: string) {
+    return this.response(await this.remindService.remove(id));
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Update reminder',
+    description: 'Update reminder of current logged in user',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async update(@Param('id') id: string) {
+    return this.response(await this.remindService.update(id));
+  }
+
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateRemindDto: UpdateRemindDto) {
   //   return this.remindService.update(+id, updateRemindDto);
