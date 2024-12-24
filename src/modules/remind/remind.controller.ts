@@ -9,6 +9,7 @@ import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { IsObjectIdPipe } from 'nestjs-object-id';
 import { ConfirmRepayDto } from './dto/confirm-repay.dto';
+import { DeleteRemindDto } from './dto/delete-remind.dto';
 
 @Controller('remind')
 @UseGuards(AuthGuard)
@@ -88,8 +89,14 @@ export class RemindController extends BaseController {
   })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiBearerAuth()
-  async remove(@Param('id', IsObjectIdPipe) id: string, @AuthUser() user: any) {
-    return this.response(await this.remindService.remove(id, user));
+  async remove(
+    @Param('id', IsObjectIdPipe) id: string,
+    @Body() deleteRemindDto: DeleteRemindDto,
+    @AuthUser() user: any,
+  ) {
+    return this.response(
+      await this.remindService.remove(id, user, deleteRemindDto),
+    );
   }
 
   @Post('/:id/otp')
@@ -105,7 +112,7 @@ export class RemindController extends BaseController {
     return this.response(await this.remindService.sendOTP(id, user));
   }
 
-  @Post('/:id/repay')
+  @Post('/repay')
   @HttpCode(HttpStatus.OK)
   @IsForceLogin(true)
   @ApiOperation({

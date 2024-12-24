@@ -68,3 +68,7 @@ export enum CustomErrorCode {
 export enum SucceedCode {
   OK = 200,
 }
+
+export enum CustomMessages {
+  CANCEL_PAYMENT_REQUEST = 'Huỷ nhắc nợ',
+}

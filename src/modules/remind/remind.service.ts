@@ -4,13 +4,23 @@ import { CreateRemindDto } from './dto/create-remind.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Remind, RemindDocument } from 'src/schemas/remind.schema';
 import { Model } from 'mongoose';
-import { SuccessMessage, ErrorMessage } from 'src/common/messages';
+import {
+  SuccessMessage,
+  ErrorMessage,
+  CustomMessages,
+} from 'src/common/messages';
 import { BadRequestException } from '@nestjs/common';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
 import { ACCOUNT_TYPE, REMIND_STATUS } from 'src/common/constants';
 import { OTP, OTPDocument } from 'src/schemas/otp.schema';
 import { MailService } from 'src/services/mail/mail.service';
 import { ConfirmRepayDto } from './dto/confirm-repay.dto';
+import { DeleteRemindDto } from './dto/delete-remind.dto';
+import { NotificationService } from '../notification/notification.service';
+import {
+  Notification,
+  NotificationDocument,
+} from 'src/schemas/notification.schema';
 
 @Injectable()
 export class RemindService {
@@ -22,7 +32,10 @@ export class RemindService {
     @InjectModel(Account.name, 'users')
     private accountModel: Model<Account>,
     @InjectModel(OTP.name, 'users') private otpModel: Model<OTPDocument>,
+    @InjectModel(Notification.name, 'users')
+    private notificationModel: Model<NotificationDocument>,
     private readonly mailService: MailService,
+    private readonly notificationService: NotificationService,
   ) {}
   async create(createRemindDto: CreateRemindDto, user: any) {
     const { accountNumber, message, amount } = createRemindDto;
@@ -133,24 +146,51 @@ export class RemindService {
   //   return `This action updates a #${id} remind`;
   // }
 
-  async remove(id: string, user: any) {
+  async remove(id: string, user: any, deleteRemindDto: DeleteRemindDto) {
+    const { message } = deleteRemindDto;
     const currentUser = await this.userModel.findById(user.id);
 
     const remind = await this.remindModel.findOne({
       _id: id,
-      from: currentUser.account,
+      $or: [{ from: currentUser.account }, { to: currentUser.account }],
       status: REMIND_STATUS.PENDING,
     });
 
     if (!remind) {
       throw new BadRequestException(ErrorMessage.INVALID_REMIND);
     }
+    if (remind.from == currentUser.account) {
+      const toUser = await this.userModel.findById(remind.to);
+      const notification = new this.notificationModel({
+        title: CustomMessages.CANCEL_PAYMENT_REQUEST,
+        content: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
+        for: toUser.id,
+      });
+      // await notification.save();
+      await this.notificationService.emit(notification);
+      await this.remindModel.findOneAndDelete({
+        _id: id,
+        from: currentUser.account,
+        status: REMIND_STATUS.PENDING,
+      });
+    } else if (remind.to == currentUser.account) {
+      const fromUser = await this.userModel.findById(remind.from);
+      const notification = new this.notificationModel({
+        title: CustomMessages.CANCEL_PAYMENT_REQUEST,
+        content: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
+        for: fromUser.id,
+      });
+      // await notification.save();
+      await this.notificationService.emit(notification);
+      await this.remindModel.findOneAndDelete({
+        _id: id,
+        to: currentUser.account,
+        status: REMIND_STATUS.PENDING,
+      });
+    } else {
+      throw new BadRequestException(ErrorMessage.INVALID_REMIND);
+    }
 
-    await this.remindModel.findOneAndDelete({
-      _id: id,
-      from: currentUser.account,
-      status: REMIND_STATUS.PENDING,
-    });
     return SuccessMessage.SUCCESS;
   }
 

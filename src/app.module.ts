@@ -10,6 +10,7 @@ import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 import { RemindModule } from './modules/remind/remind.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AdminModule } from './modules/admin/admin.module';
     RemindModule,
     EmployeeModule,
     AdminModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [],
