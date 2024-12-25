@@ -168,7 +168,7 @@ export class RemindService {
       const toUser = toAccount.owner as UserDocument;
       const notification = new this.notificationModel({
         title: CustomMessages.CANCEL_PAYMENT_REQUEST,
-        content: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
+        message: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
         for: toUser.id,
       });
       await notification.save();
@@ -186,7 +186,7 @@ export class RemindService {
       const fromUser = fromAccount.owner as UserDocument;
       const notification = new this.notificationModel({
         title: CustomMessages.CANCEL_PAYMENT_REQUEST,
-        content: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
+        message: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
         for: fromUser.id,
       });
       await notification.save();
