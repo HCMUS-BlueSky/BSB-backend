@@ -71,4 +71,5 @@ export enum SucceedCode {
 
 export enum CustomMessages {
   CANCEL_PAYMENT_REQUEST = 'Huỷ nhắc nợ',
+  FULFILLED_PAYMENT_REQUEST = 'Thanh toán nhắc nợ thành công',
 }

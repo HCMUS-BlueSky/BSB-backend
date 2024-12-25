@@ -284,6 +284,13 @@ export class RemindService {
       status: REMIND_STATUS.FULFILLED,
     });
     await this.otpModel.findByIdAndDelete(OTP.id);
+    const notification = new this.notificationModel({
+      title: CustomMessages.FULFILLED_PAYMENT_REQUEST,
+      message: `${currentUser.fullName} đã thanh toán nhắc nợ với số tiền: ${remindData.amount}`,
+      for: receiverAccount.owner.toString(),
+    });
+    await notification.save();
+    await this.notificationService.emit(notification);
 
     return SuccessMessage.SUCCESS;
   }
