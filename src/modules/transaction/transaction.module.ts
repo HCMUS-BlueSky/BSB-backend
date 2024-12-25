@@ -9,6 +9,7 @@ import { Transaction, TransactionSchema } from 'src/schemas/transaction.schema';
 import { OTP, OTPSchema } from 'src/schemas/otp.schema';
 import { MailModule } from 'src/services/mail/mail.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
+import { Remind, RemindSchema } from 'src/schemas/remind.schema';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { EncryptionModule } from 'src/services/encryption/encryption.module';
         { name: Account.name, schema: AccountSchema },
         { name: Transaction.name, schema: TransactionSchema },
         { name: OTP.name, schema: OTPSchema },
+        { name: Remind.name, schema: RemindSchema },
       ],
       'users',
     ),

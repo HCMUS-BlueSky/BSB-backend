@@ -18,12 +18,14 @@ import {
   ACCOUNT_TYPE,
   FEE,
   PAYER,
+  REMIND_STATUS,
   TRANSACTION_STATUS,
 } from 'src/common/constants';
 import { OTP, OTPDocument } from 'src/schemas/otp.schema';
 import { MailService } from 'src/services/mail/mail.service';
 import { ConfirmInternalTransactionDto } from './dto/confirm-internal-transaction.dto';
 import { ResendTransactionOTPDto } from './dto/resend-otp.dto';
+import { Remind, RemindDocument } from 'src/schemas/remind.schema';
 
 @Injectable()
 export class TransactionService {
@@ -36,6 +38,8 @@ export class TransactionService {
     @InjectModel(Transaction.name, 'users')
     private transactionModel: Model<TransactionDocument>,
     @InjectModel(OTP.name, 'users') private otpModel: Model<OTPDocument>,
+    @InjectModel(Remind.name, 'users')
+    private remindModel: Model<RemindDocument>,
     private readonly mailService: MailService,
   ) {}
 
@@ -272,6 +276,21 @@ export class TransactionService {
         select: 'accountNumber',
         populate: { path: 'owner', select: 'fullName -_id' },
       });
-    return transactions;
+    const reminders = await this.remindModel
+      .find({
+        $or: [{ from: currentAccount._id }, { to: currentAccount._id }],
+        status: REMIND_STATUS.FULFILLED,
+      })
+      .populate({
+        path: 'from',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'to',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
+    return [...transactions, ...reminders];
   }
 }
