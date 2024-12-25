@@ -21,6 +21,7 @@ export enum ErrorMessage {
   INVALID_USER_REMIND = 'Invalid user remind',
   EMAIL_NOT_ASSOCIATED = 'Email not associated with any account',
   INVALID_REMIND = 'Invalid remind',
+  DOB_NOT_IN_FUTURE='Birthday cannot be in the future'
 }
 
 export enum GenericErrorMessage {
