@@ -4,12 +4,15 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BaseController } from 'src/vendors/base';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 @UseGuards(AuthGuard)
@@ -39,6 +42,21 @@ export class UserController extends BaseController {
   @ApiBearerAuth()
   async getProfile(@AuthUser() user: any) {
     return this.response(await this.userService.getProfile(user));
+  }
+
+  @Patch('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Update user information',
+    description: 'Update address and date of birth for the currently logged-in user',
+  })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiBearerAuth()
+  async updateProfile(
+    @AuthUser() user: any,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.response(await this.userService.updateProfile(user.id, updateUserDto));
   }
 
   // @Patch(':id')

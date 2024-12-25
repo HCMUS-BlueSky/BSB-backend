@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
@@ -6,6 +6,8 @@ import { EmailToken, EmailTokenDocument } from 'src/schemas/email-token.schema';
 import { ResetToken, ResetTokenDocument } from 'src/schemas/reset-token.schema';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { AccountService } from '../account/account.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ErrorMessage } from 'src/common/messages';
 
 @Injectable()
 export class UserService {
@@ -34,6 +36,24 @@ export class UserService {
   async getProfile(user: any) {
     return await this.userModel.findById(user.id).select('-password -account');
   }
+
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new BadRequestException(ErrorMessage.INVALID_USER);
+    }
+
+    if (updateUserDto.address !== undefined) {
+      user.address = updateUserDto.address;
+    }
+
+    if (updateUserDto.dob !== undefined) {
+      user.dob = updateUserDto.dob;
+    }
+
+    return await user.save();
+  }
+
   // create(createUserDto: CreateUserDto) {
   //   return 'This action adds a new user';
   // }
