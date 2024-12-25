@@ -7,6 +7,7 @@ import {
   Notification,
   NotificationDocument,
 } from 'src/schemas/notification.schema';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class NotificationService {
@@ -14,13 +15,15 @@ export class NotificationService {
   constructor(
     @InjectModel(Notification.name, 'users')
     private notificationModel: Model<NotificationDocument>,
+    private readonly authService: AuthService,
   ) {}
 
   public async emit(data: NotificationDocument) {
     this.emitter.emit('liveNotification', { data });
   }
 
-  public subscribeForUser(user: any) {
+  public subscribeForUser(token: string) {
+    const user = this.authService.validateToken(token);
     const source = fromEvent(this.emitter, 'liveNotification');
     return source.pipe(
       filter(({ data: liveNotification }) => liveNotification?.for == user.id),

@@ -98,7 +98,7 @@ export class AuthService {
   //   };
   // }
 
-  async validateToken(token: string) {
+  validateToken(token: string) {
     try {
       const { id, role } = this.jwtService.verify(token, {
         secret: this.configService.get<string>('JWT_ACCESS_KEY'),
@@ -158,14 +158,12 @@ export class AuthService {
     return { refreshToken };
   }
 
-  async changePassword(changePasswordDto: ChangePasswordDto,
-    user:any
+  async changePassword(
+    changePasswordDto: ChangePasswordDto,
+    user: any,
   ): Promise<void> {
-
     const { oldPassword, newPassword } = changePasswordDto;
-    const account = await this.userModel
-    .findById(user.id)
-    .populate('account');
+    const account = await this.userModel.findById(user.id).populate('account');
 
     if (!account) {
       throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
@@ -181,23 +179,20 @@ export class AuthService {
   async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<void> {
     const { email } = forgetPasswordDto;
     const user = await this.userModel.findOne({ email });
-    
 
     if (!user) {
       throw new BadRequestException(ErrorMessage.EMAIL_NOT_ASSOCIATED);
     }
 
-    const { accessToken }=this.generateAccessToken({
+    const { accessToken } = this.generateAccessToken({
       id: user.id,
       role: user.role,
     });
 
-
     const resetPasswordUrl = `${this.configService.get<string>('FRONTEND_BASE_URL')}/change-password?token=${accessToken}`;
 
-    await this.mailService.sendForgetPasswordEmail(resetPasswordUrl, user );
+    await this.mailService.sendForgetPasswordEmail(resetPasswordUrl, user);
   }
-
 
   // private generateResetPasswordToken(payload: any) {
   //   const resetPasswordToken = this.jwtService.sign(payload, {

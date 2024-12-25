@@ -4,7 +4,12 @@ import { AuthService } from './auth.service';
 import { BaseController } from 'src/vendors/base';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
@@ -57,9 +62,8 @@ export class AuthController extends BaseController {
     @Body() changePasswordDto: ChangePasswordDto,
     @AuthUser() user: any,
   ) {
-  
     return this.response(
-      await this.authService.changePassword( changePasswordDto,user),
+      await this.authService.changePassword(changePasswordDto, user),
     );
   }
 

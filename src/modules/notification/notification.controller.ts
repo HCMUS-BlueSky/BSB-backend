@@ -1,19 +1,14 @@
-import { Controller, Sse, UseGuards } from '@nestjs/common';
+import { Controller, Query, Sse } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { AuthGuard } from 'src/vendors/guards/auth.guard';
-import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('live-notification')
-@UseGuards(AuthGuard)
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Sse()
-  @ApiBearerAuth()
-  @IsForceLogin(true)
-  @ApiBearerAuth()
-  public getEventsBySeller(@AuthUser() user: any) {
-    return this.notificationService.subscribeForUser(user);
+  @ApiQuery({ name: 'token', required: true })
+  public getEventsBySeller(@Query('token') token: string) {
+    return this.notificationService.subscribeForUser(token);
   }
 }
