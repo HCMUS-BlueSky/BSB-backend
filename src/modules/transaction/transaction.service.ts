@@ -68,13 +68,20 @@ export class TransactionService {
     if (receiverAccount.status !== 'ACTIVE') {
       throw new BadRequestException(ErrorMessage.RECEIVER_IS_DISABLED);
     }
-    const onGoingTransaction = await this.transactionModel.exists({
-      sender: currentAccount._id,
-      status: TRANSACTION_STATUS.PENDING,
-    });
-    if (onGoingTransaction) {
-      throw new BadRequestException(ErrorMessage.ON_GOING_TRANSACTION);
-    }
+    await this.transactionModel.updateMany(
+      {
+        sender: currentAccount._id,
+        status: TRANSACTION_STATUS.PENDING,
+      },
+      { status: TRANSACTION_STATUS.REJECTED },
+    );
+    // const onGoingTransaction = await this.transactionModel.exists({
+    //   sender: currentAccount._id,
+    //   status: TRANSACTION_STATUS.PENDING,
+    // });
+    // if (onGoingTransaction) {
+    //   throw new BadRequestException(ErrorMessage.ON_GOING_TRANSACTION);
+    // }
     if (currentAccount.balance < data.amount) {
       throw new BadRequestException(ErrorMessage.INSUFFICIENT_BALANCE);
     }
