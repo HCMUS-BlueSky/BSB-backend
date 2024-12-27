@@ -18,6 +18,7 @@ import {
   ACCOUNT_TYPE,
   FEE,
   PAYER,
+  RECEIVER_TYPE,
   REMIND_STATUS,
   TRANSACTION_STATUS,
 } from 'src/common/constants';
@@ -26,6 +27,7 @@ import { MailService } from 'src/services/mail/mail.service';
 import { ConfirmInternalTransactionDto } from './dto/confirm-internal-transaction.dto';
 import { ResendTransactionOTPDto } from './dto/resend-otp.dto';
 import { Remind, RemindDocument } from 'src/schemas/remind.schema';
+import { ReceiverService } from '../receiver/receiver.service';
 
 @Injectable()
 export class TransactionService {
@@ -41,6 +43,7 @@ export class TransactionService {
     @InjectModel(Remind.name, 'users')
     private remindModel: Model<RemindDocument>,
     private readonly mailService: MailService,
+    private readonly receiverService: ReceiverService,
   ) {}
 
   async createInternalTransaction(
@@ -109,6 +112,18 @@ export class TransactionService {
     await newTransaction.save();
     await OTP.save();
     await this.mailService.sendTransactionOTP(OTP, currentUser);
+
+    if (data.saveAsReceiver) {
+      try {
+        await this.receiverService.create(
+          {
+            accountNumber: data.accountNumber,
+            type: RECEIVER_TYPE.INTERNAL,
+          },
+          user,
+        );
+      } catch {}
+    }
     return newTransaction;
   }
 

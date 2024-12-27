@@ -10,6 +10,7 @@ import { OTP, OTPSchema } from 'src/schemas/otp.schema';
 import { MailModule } from 'src/services/mail/mail.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { Remind, RemindSchema } from 'src/schemas/remind.schema';
+import { ReceiverModule } from '../receiver/receiver.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Remind, RemindSchema } from 'src/schemas/remind.schema';
       ],
       'users',
     ),
+    ReceiverModule,
     MailModule,
     EncryptionModule,
   ],

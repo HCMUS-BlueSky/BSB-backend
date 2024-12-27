@@ -17,7 +17,7 @@ export class CreateReceiverDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  nickname: string;
+  nickname?: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -27,5 +27,5 @@ export class CreateReceiverDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  bank: string;
+  bank?: string;
 }

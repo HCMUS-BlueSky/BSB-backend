@@ -19,5 +19,6 @@ import { Account, AccountSchema } from 'src/schemas/account.schema';
   ],
   controllers: [ReceiverController],
   providers: [ReceiverService],
+  exports: [ReceiverService],
 })
 export class ReceiverModule {}

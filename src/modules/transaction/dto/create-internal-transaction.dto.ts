@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumberString,
@@ -7,6 +7,8 @@ import {
   IsNumber,
   Min,
   MaxLength,
+  IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { PAYER } from 'src/common/constants';
 
@@ -32,4 +34,9 @@ export class CreateInternalTransactionDto {
   @IsString()
   @MaxLength(200)
   description: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  saveAsReceiver: boolean;
 }
