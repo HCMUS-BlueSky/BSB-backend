@@ -27,10 +27,28 @@ export class EmployeeService {
   ) {}
 
   async topUpAccount(topUpAccountDto: TopUpAccountDto) {
-    const { amount, accountNumber } = topUpAccountDto;
+    const { amount, accountNumberOrEmail } = topUpAccountDto;
+    let accountNumber = '';
     const associatedAccount = await this.accountModel.findOne({
-      accountNumber,
+      accountNumber: accountNumberOrEmail,
     });
+    if (associatedAccount) {
+      accountNumber = associatedAccount.accountNumber;
+    } else {
+      const associatedUser = await this.userModel
+        .findOne({
+          email: accountNumberOrEmail,
+        })
+        .populate('account');
+      if (!associatedUser) {
+        throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+      }
+      const account = associatedUser.account as AccountDocument;
+      if (!account) {
+        throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+      }
+      accountNumber = account.accountNumber;
+    }
     if (!associatedAccount) {
       throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
     }

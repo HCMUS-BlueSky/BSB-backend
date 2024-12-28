@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsNumberString, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
 export class TopUpAccountDto {
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
-  accountNumber: string;
+  @IsString()
+  accountNumberOrEmail: string;
 
   @ApiProperty()
   @IsNotEmpty()
