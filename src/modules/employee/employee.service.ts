@@ -31,6 +31,7 @@ export class EmployeeService {
     let accountNumber = '';
     const associatedAccount = await this.accountModel.findOne({
       accountNumber: accountNumberOrEmail,
+      type: ACCOUNT_TYPE.INTERNAL,
     });
     if (associatedAccount) {
       accountNumber = associatedAccount.accountNumber;
@@ -49,9 +50,6 @@ export class EmployeeService {
       }
       accountNumber = account.accountNumber;
     }
-    if (!associatedAccount) {
-      throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
-    }
     await this.accountModel.findOneAndUpdate(
       { accountNumber },
       { $inc: { balance: amount } },
@@ -63,6 +61,7 @@ export class EmployeeService {
     const { accountNumber } = accountHistoryDto;
     const associatedAccount = await this.accountModel.findOne({
       accountNumber,
+      type: ACCOUNT_TYPE.INTERNAL,
     });
     if (!associatedAccount) {
       throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
@@ -102,11 +101,16 @@ export class EmployeeService {
   }
 
   async getAccountById(id: string) {
-    const account = await this.accountModel.findById(id).populate({
-      path: 'owner',
-      select: '-password -receiverList',
-      match: { role: 'CUSTOMER' },
-    });
+    const account = await this.accountModel
+      .findOne({
+        _id: id,
+        type: ACCOUNT_TYPE.INTERNAL,
+      })
+      .populate({
+        path: 'owner',
+        select: '-password -receiverList',
+        match: { role: 'CUSTOMER' },
+      });
     if (!account.owner) {
       throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
     }

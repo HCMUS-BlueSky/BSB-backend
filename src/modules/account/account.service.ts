@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
 import { ACCOUNT_TYPE } from 'src/common/constants';
+import { AccountInfoDto } from './dto/account-info.dto';
+import { User, UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class AccountService {
@@ -11,6 +13,8 @@ export class AccountService {
     private readonly configService: ConfigService,
     @InjectModel(Account.name, 'users')
     private accountModel: Model<AccountDocument>,
+    @InjectModel(User.name, 'users')
+    private userModel: Model<UserDocument>,
   ) {}
   // async findOneByEmail(email: string) {
   //   return await this.userModel.findOne({ email: email });
@@ -58,6 +62,24 @@ export class AccountService {
     return account.owner;
   }
 
+  async getUserInfoByAccountNumberOrEmail(accountInfoDto: AccountInfoDto) {
+    const { accountNumberOrEmail } = accountInfoDto;
+    const account = await this.accountModel
+      .findOne({
+        accountNumber: accountNumberOrEmail,
+        type: ACCOUNT_TYPE.INTERNAL,
+      })
+      .populate('owner', 'email fullName phone')
+      .select('owner');
+    if (account) return account.owner;
+
+    const user = await this.userModel
+      .findOne({
+        email: accountNumberOrEmail,
+      })
+      .select('email fullName phone');
+    return user;
+  }
   // update(id: number, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;
   // }

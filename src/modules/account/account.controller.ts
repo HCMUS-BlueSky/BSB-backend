@@ -5,12 +5,15 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BaseController } from 'src/vendors/base';
+import { AccountInfoDto } from './dto/account-info.dto';
 
 @Controller('account')
 @UseGuards(AuthGuard)
@@ -59,6 +62,24 @@ export class AccountController extends BaseController {
     );
   }
 
+  @Post('/info')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Get user info by account number or email',
+    description: 'Get user info by account number or email',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getUserInfoByAccountNumberOrEmail(
+    @Body() accountInfoDto: AccountInfoDto,
+  ) {
+    return this.response(
+      await this.accountService.getUserInfoByAccountNumberOrEmail(
+        accountInfoDto,
+      ),
+    );
+  }
   // @Delete(':id')
   // remove(@Param('id') id: string) {
   //   return this.userService.remove(+id);
