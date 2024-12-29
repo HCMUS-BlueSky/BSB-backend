@@ -12,6 +12,9 @@ import {
 import { TransactionService } from './transaction.service';
 import { CreateInternalTransactionDto } from './dto/create-internal-transaction.dto';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
+import { RolesGuard } from 'src/vendors/guards/role.guard';
+import { Roles } from 'src/vendors/decorators/role.decorator';
+import { ROLES } from 'src/common/constants';
 import { BaseController } from 'src/vendors/base';
 import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
@@ -21,7 +24,7 @@ import { IsObjectIdPipe } from 'nestjs-object-id';
 import { EncryptionService } from 'src/services/encryption/encryption.service';
 
 @Controller('transfer')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 export class TransactionController extends BaseController {
   constructor(
     private readonly transactionService: TransactionService,
@@ -119,6 +122,25 @@ export class TransactionController extends BaseController {
   @ApiBearerAuth()
   async getHistory(@AuthUser() user: any) {
     return this.response(await this.transactionService.getHistory(user));
+  }
+
+  @Get('/history/:id')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.EMPLOYEE, ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Get transaction detail',
+    description: 'Get transaction detail',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getHistoryDetail(
+    @Param('id', IsObjectIdPipe) id: string,
+    @AuthUser() user: any,
+  ) {
+    return this.response(
+      await this.transactionService.getHistoryDetail(id, user),
+    );
   }
 
   // @Get(':id')

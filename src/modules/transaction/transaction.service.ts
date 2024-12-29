@@ -1,3 +1,4 @@
+import * as mongoose from 'mongoose';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateInternalTransactionDto } from './dto/create-internal-transaction.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -301,6 +302,51 @@ export class TransactionService {
     const reminders = await this.remindModel
       .find({
         $or: [{ from: currentAccount._id }, { to: currentAccount._id }],
+        status: REMIND_STATUS.FULFILLED,
+      })
+      .populate({
+        path: 'from',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'to',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
+    return [...transactions, ...reminders];
+  }
+
+  async getHistoryDetail(accountId: string, user: any) {
+    const currentAccount = await this.accountModel.findOne({ owner: user.id });
+    if (!currentAccount) {
+      throw new BadRequestException(ErrorMessage.INVALID_USER);
+    }
+    const transactions = await this.transactionModel
+      .find({
+        $or: [
+          { sender: new mongoose.Types.ObjectId(accountId) },
+          { receiver: accountId },
+        ],
+        status: TRANSACTION_STATUS.FULFILLED,
+      })
+      .populate({
+        path: 'sender',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'receiver',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
+
+    const reminders = await this.remindModel
+      .find({
+        $or: [
+          { from: new mongoose.Types.ObjectId(accountId) },
+          { to: new mongoose.Types.ObjectId(accountId) },
+        ],
         status: REMIND_STATUS.FULFILLED,
       })
       .populate({
