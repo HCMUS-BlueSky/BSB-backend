@@ -317,7 +317,7 @@ export class TransactionService {
     return [...transactions, ...reminders];
   }
 
-  async getHistoryDetail(transactionID: string, user: any) {
+  async getHistoryDetail(accountId: string, user: any) {
     const currentAccount = await this.accountModel.findOne({ owner: user.id });
     if (!currentAccount) {
       throw new BadRequestException(ErrorMessage.INVALID_USER);
@@ -325,8 +325,8 @@ export class TransactionService {
     const transactions = await this.transactionModel
       .find({
         $or: [
-          { sender: new mongoose.Types.ObjectId(transactionID) },
-          { receiver: transactionID },
+          { sender: new mongoose.Types.ObjectId(accountId) },
+          { receiver: accountId },
         ],
         status: TRANSACTION_STATUS.FULFILLED,
       })
@@ -343,7 +343,10 @@ export class TransactionService {
 
     const reminders = await this.remindModel
       .find({
-        $or: [{ from: transactionID }, { to: transactionID }],
+        $or: [
+          { from: new mongoose.Types.ObjectId(accountId) },
+          { to: new mongoose.Types.ObjectId(accountId) },
+        ],
         status: REMIND_STATUS.FULFILLED,
       })
       .populate({
