@@ -1,3 +1,4 @@
+import * as mongoose from 'mongoose';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateInternalTransactionDto } from './dto/create-internal-transaction.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -323,19 +324,23 @@ export class TransactionService {
     }
     const transactions = await this.transactionModel
       .find({
-        $or: [{ sender: transactionID }, { receiver: transactionID }],
+        $or: [
+          { sender: new mongoose.Types.ObjectId(transactionID) },
+          { receiver: transactionID },
+        ],
         status: TRANSACTION_STATUS.FULFILLED,
-      })
-      .populate({
-        path: 'receiver',
-        select: 'accountNumber',
-        populate: { path: 'owner', select: 'fullName -_id' },
       })
       .populate({
         path: 'sender',
         select: 'accountNumber',
         populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'receiver',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
       });
+
     const reminders = await this.remindModel
       .find({
         $or: [{ from: transactionID }, { to: transactionID }],
