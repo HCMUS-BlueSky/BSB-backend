@@ -315,4 +315,42 @@ export class TransactionService {
       });
     return [...transactions, ...reminders];
   }
+
+  async getHistoryDetail(transactionID: string, user: any) {
+    const currentAccount = await this.accountModel.findOne({ owner: user.id });
+    if (!currentAccount) {
+      throw new BadRequestException(ErrorMessage.INVALID_USER);
+    }
+    const transactions = await this.transactionModel
+      .find({
+        $or: [{ sender: transactionID }, { receiver: transactionID }],
+        status: TRANSACTION_STATUS.FULFILLED,
+      })
+      .populate({
+        path: 'receiver',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'sender',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
+    const reminders = await this.remindModel
+      .find({
+        $or: [{ from: transactionID }, { to: transactionID }],
+        status: REMIND_STATUS.FULFILLED,
+      })
+      .populate({
+        path: 'from',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'to',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
+    return [...transactions, ...reminders];
+  }
 }
