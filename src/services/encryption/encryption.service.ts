@@ -10,7 +10,7 @@ export class EncryptionService {
     openpgp
       .generateKey({
         curve: 'brainpoolP512r1',
-        userIDs: [{ name: 'Test', email: 'test@test.com' }],
+        userIDs: [{ name: 'BlueSkyBank', email: 'external@blueskybank.com' }],
       })
       .then((key) => {
         this.privateKey = key.privateKey;
@@ -18,11 +18,30 @@ export class EncryptionService {
       });
   }
 
-  // async encrypt(data: string) {}
+  async encrypt(data: string) {
+    const publicKey = await openpgp.readKey({ armoredKey: this.publicKey });
+    const encrypted = await openpgp.encrypt({
+      message: await openpgp.createMessage({ text: data }),
+      encryptionKeys: publicKey,
+    });
+    return encrypted;
+  }
 
   getPublicKey() {
     return this.publicKey;
   }
+
+  async decrypt(data: string) {
+    const privateKey = await openpgp.readPrivateKey({
+      armoredKey: this.privateKey,
+    });
+    const { data: decrypted } = await openpgp.decrypt({
+      message: await openpgp.readMessage({ armoredMessage: data }),
+      decryptionKeys: privateKey,
+    });
+    return decrypted;
+  }
+
   // async sendResetPwd(user: UserEntity, token: string) {
   //   const url = `${process.env.URL}/auth/reset-password?token=${token}`;
 

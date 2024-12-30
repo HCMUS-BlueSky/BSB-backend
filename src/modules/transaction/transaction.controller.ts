@@ -21,15 +21,11 @@ import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ConfirmInternalTransactionDto } from './dto/confirm-internal-transaction.dto';
 import { ResendTransactionOTPDto } from './dto/resend-otp.dto';
 import { IsObjectIdPipe } from 'nestjs-object-id';
-import { EncryptionService } from 'src/services/encryption/encryption.service';
 
 @Controller('transfer')
 @UseGuards(AuthGuard, RolesGuard)
 export class TransactionController extends BaseController {
-  constructor(
-    private readonly transactionService: TransactionService,
-    private readonly encryptionService: EncryptionService,
-  ) {
+  constructor(private readonly transactionService: TransactionService) {
     super();
   }
 
@@ -164,16 +160,5 @@ export class TransactionController extends BaseController {
   @ApiBearerAuth()
   async remove(@Param('id', IsObjectIdPipe) id: string, @AuthUser() user: any) {
     return this.response(await this.transactionService.remove(id, user));
-  }
-
-  @Get('/external/publicKey')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Get public key for encryption',
-    description: 'Get public key for encryption to use for external transfer',
-  })
-  @ApiResponse({ status: 200, description: 'Success' })
-  getPublicKey() {
-    return this.response(this.encryptionService.getPublicKey());
   }
 }

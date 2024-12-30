@@ -11,6 +11,7 @@ import { RemindModule } from './modules/remind/remind.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { ExternalModule } from './modules/external/external.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     EmployeeModule,
     AdminModule,
     NotificationModule,
+    ExternalModule,
   ],
   controllers: [],
   providers: [],

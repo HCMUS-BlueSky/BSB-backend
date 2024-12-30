@@ -1,16 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { CreateBankDto } from './dto/create-bank.dto';
+import { BaseController } from 'src/vendors/base';
+import { AuthGuard } from 'src/vendors/guards/auth.guard';
+import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ROLES } from 'src/common/constants';
+import { IsForceLogin } from 'src/vendors/decorators';
+import { Roles } from 'src/vendors/decorators/role.decorator';
 
 @Controller('admin')
-export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+@UseGuards(AuthGuard)
+export class AdminController extends BaseController {
+  constructor(private readonly adminService: AdminService) {
+    super();
+  }
 
-  // @Post()
-  // create(@Body() createAdminDto: CreateAdminDto) {
-  //   return this.adminService.create(createAdminDto);
-  // }
+  @Post('/registerBank')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Register external bank (ADMIN ONLY)',
+    description: 'Register external bank (ADMIN ONLY)',
+  })
+  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiBearerAuth()
+  async create(@Body() createBankDto: CreateBankDto) {
+    return this.response(await this.adminService.registerBank(createBankDto));
+  }
 
   // @Get()
   // findAll() {

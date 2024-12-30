@@ -12,7 +12,19 @@ export class Bank {
   logo: string;
 
   @Prop({ type: String, required: true })
-  endpoint: string;
+  ip: string;
+
+  @Prop({ type: String, required: true })
+  baseUrl: string;
+
+  @Prop({ type: String, required: true })
+  accountInfoPath: string;
+
+  @Prop({ type: String, required: true })
+  transferPath: string;
+
+  @Prop({ type: String, required: true })
+  secretKey: string;
 }
 
 export const BankSchema = SchemaFactory.createForClass(Bank);
