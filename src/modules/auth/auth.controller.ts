@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Put, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Put,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { LoginRequestDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { BaseController } from 'src/vendors/base';
@@ -15,6 +24,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
+import { Cookies } from 'src/vendors/decorators/cookies.decorator';
 
 @Controller('auth')
 @UseGuards(AuthGuard)
@@ -45,7 +55,7 @@ export class AuthController extends BaseController {
     const token = await this.authService.login(loginUserDto);
     response.cookie('refreshToken', token.refreshToken, {
       httpOnly: true,
-      domain: this.configService.get<string>('DOMAIN') || 'localhost',
+      sameSite: 'strict',
     });
     return this.response({ accessToken: token.accessToken });
   }
@@ -82,6 +92,19 @@ export class AuthController extends BaseController {
     );
   }
 
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Refresh token',
+    description: 'Refresh token using refreshToken cookie',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+  })
+  async refresh(@Cookies('refreshToken') refreshToken: string) {
+    return this.response(await this.authService.refreshToken(refreshToken));
+  }
   // @ApiTags('Auth')
   // @Post('confirm')
   // @ApiOperation({

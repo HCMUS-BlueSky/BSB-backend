@@ -194,6 +194,27 @@ export class AuthService {
     await this.mailService.sendForgetPasswordEmail(resetPasswordUrl, user);
   }
 
+  async refreshToken(token: string) {
+    try {
+      const { id } = await this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_REFRESH_KEY'),
+      });
+
+      const user = await this.userService.findOneById(id);
+      if (!user) {
+        throw new BadRequestException(ErrorMessage.INVALID_USER);
+      }
+
+      const { accessToken } = this.generateAccessToken({
+        id: user.id,
+        role: user.role,
+      });
+
+      return { accessToken };
+    } catch {
+      throw new UnauthorizedException(ErrorMessage.EXPIRED_TOKEN);
+    }
+  }
   // private generateResetPasswordToken(payload: any) {
   //   const resetPasswordToken = this.jwtService.sign(payload, {
   //     secret: process.env.JWT_RESET_PASSWORD_KEY,

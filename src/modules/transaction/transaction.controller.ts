@@ -8,6 +8,9 @@ import {
   Get,
   Delete,
   Param,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateInternalTransactionDto } from './dto/create-internal-transaction.dto';
@@ -16,7 +19,12 @@ import { RolesGuard } from 'src/vendors/guards/role.guard';
 import { Roles } from 'src/vendors/decorators/role.decorator';
 import { ROLES } from 'src/common/constants';
 import { BaseController } from 'src/vendors/base';
-import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ConfirmInternalTransactionDto } from './dto/confirm-internal-transaction.dto';
 import { ResendTransactionOTPDto } from './dto/resend-otp.dto';
@@ -116,8 +124,17 @@ export class TransactionController extends BaseController {
   })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiBearerAuth()
-  async getHistory(@AuthUser() user: any) {
-    return this.response(await this.transactionService.getHistory(user));
+  @ApiQuery({
+    name: 'limit',
+    default: 30,
+    required: false,
+    description: 'Limit number of days',
+  })
+  async getHistory(
+    @AuthUser() user: any,
+    @Query('limit', new DefaultValuePipe(30), ParseIntPipe) limit: number,
+  ) {
+    return this.response(await this.transactionService.getHistory(user, limit));
   }
 
   @Get('/history/:id')

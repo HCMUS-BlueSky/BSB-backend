@@ -279,7 +279,7 @@ export class TransactionService {
     return SuccessMessage.SUCCESS;
   }
 
-  async getHistory(user: any) {
+  async getHistory(user: any, limit: number) {
     const currentAccount = await this.accountModel.findOne({ owner: user.id });
     if (!currentAccount) {
       throw new BadRequestException(ErrorMessage.INVALID_USER);
@@ -288,6 +288,9 @@ export class TransactionService {
       .find({
         $or: [{ sender: currentAccount._id }, { receiver: currentAccount.id }],
         status: TRANSACTION_STATUS.FULFILLED,
+        updatedAt: {
+          $gte: new Date(new Date().setDate(new Date().getDate() - limit)),
+        },
       })
       .populate({
         path: 'receiver',
@@ -303,6 +306,9 @@ export class TransactionService {
       .find({
         $or: [{ from: currentAccount._id }, { to: currentAccount._id }],
         status: REMIND_STATUS.FULFILLED,
+        updatedAt: {
+          $gte: new Date(new Date().setDate(new Date().getDate() - limit)),
+        },
       })
       .populate({
         path: 'from',

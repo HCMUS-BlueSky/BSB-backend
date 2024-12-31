@@ -24,6 +24,10 @@ export class UserService {
     return await this.userModel.findOne({ email: email });
   }
 
+  async findOneById(id: string) {
+    return await this.userModel.findById(id);
+  }
+
   async createUser(data: object) {
     const user = new this.userModel(data);
     const account = await this.accountServive.createAccountForUser(
@@ -42,22 +46,22 @@ export class UserService {
     if (!user) {
       throw new BadRequestException(ErrorMessage.INVALID_USER);
     }
-  
+
     if (updateUserDto.dob !== undefined) {
       const dob = new Date(updateUserDto.dob);
       const now = new Date();
-  
+
       if (dob > now) {
         throw new BadRequestException(ErrorMessage.DOB_NOT_IN_FUTURE);
       }
-  
+
       user.dob = dob;
     }
-  
+
     if (updateUserDto.address !== undefined) {
       user.address = updateUserDto.address;
     }
-  
+
     return await user.save();
   }
 
