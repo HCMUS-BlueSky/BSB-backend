@@ -16,6 +16,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { MailService } from 'src/services/mail/mail.service';
+import { ResetPasswordDto } from './dto/reset-password-dto';
 
 // import { MailService } from '../../../services/mail/mail.service';
 // import { UserDto } from '../user/dto/user.dto';
@@ -189,7 +190,7 @@ export class AuthService {
       role: user.role,
     });
 
-    const resetPasswordUrl = `${this.configService.get<string>('FRONTEND_BASE_URL')}/change-password?token=${accessToken}`;
+    const resetPasswordUrl = `${this.configService.get<string>('FRONTEND_BASE_URL')}/reset-password?token=${accessToken}`;
 
     await this.mailService.sendForgetPasswordEmail(resetPasswordUrl, user);
   }
@@ -215,6 +216,38 @@ export class AuthService {
       throw new UnauthorizedException(ErrorMessage.EXPIRED_TOKEN);
     }
   }
+
+  async resetPassword(authHeader: string, resetPasswordDto: ResetPasswordDto): Promise<any> {
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new BadRequestException(ErrorMessage.HEADER_FAILURE);
+    }
+    const token = authHeader.replace('Bearer ', '');
+  
+    
+    const { newPassword } = resetPasswordDto;
+  
+    let decodedToken;
+    try {
+      decodedToken = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_ACCESS_KEY'),
+      });
+    } catch {
+      throw new BadRequestException(ErrorMessage.EXPIRED_TOKEN);
+    }
+  
+    const user = await this.userModel.findById(decodedToken.id);
+    if (!user) {
+      throw new BadRequestException(ErrorMessage.INVALID_USER);
+    }
+  
+    const salt = await genSalt(10);
+    const hashedPassword = await hash(newPassword, salt);
+  
+    user.password = hashedPassword;
+    await user.save();
+  }
+  
   // private generateResetPasswordToken(payload: any) {
   //   const resetPasswordToken = this.jwtService.sign(payload, {
   //     secret: process.env.JWT_RESET_PASSWORD_KEY,
