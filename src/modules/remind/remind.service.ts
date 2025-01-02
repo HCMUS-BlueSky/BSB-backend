@@ -64,6 +64,17 @@ export class RemindService {
       amount,
     });
     await newRemind.save();
+
+    const remindData = await this.populateRemindMessage(newRemind.id);
+
+    const notification = new this.notificationModel({
+      title: CustomMessages.CREATE_PAYMENT_REQUEST,
+      message: JSON.stringify(remindData),
+      for: account.owner.toString(),
+    });
+    await notification.save();
+    await this.notificationService.emit(notification);
+
     return SuccessMessage.SUCCESS;
   }
 
@@ -166,9 +177,12 @@ export class RemindService {
         .populate('owner')
         .select('owner');
       const toUser = toAccount.owner as UserDocument;
+
+      const remindMessage = await this.populateRemindMessage(remind.id);
+
       const notification = new this.notificationModel({
         title: CustomMessages.CANCEL_PAYMENT_REQUEST,
-        message: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
+        message: JSON.stringify(remindMessage),
         for: toUser.id,
       });
       await notification.save();
@@ -184,9 +198,12 @@ export class RemindService {
         .populate('owner')
         .select('owner');
       const fromUser = fromAccount.owner as UserDocument;
+
+      const remindMessage = await this.populateRemindMessage(remind.id);
+
       const notification = new this.notificationModel({
         title: CustomMessages.CANCEL_PAYMENT_REQUEST,
-        message: `${currentUser.fullName} đã hủy nhắc nợ với nội dung: ${message}`,
+        message: JSON.stringify(remindMessage),
         for: fromUser.id,
       });
       await notification.save();
@@ -284,14 +301,32 @@ export class RemindService {
       status: REMIND_STATUS.FULFILLED,
     });
     await this.otpModel.findByIdAndDelete(OTP.id);
+
+    const remindMessage = await this.populateRemindMessage(remindData.id);
+
     const notification = new this.notificationModel({
       title: CustomMessages.FULFILLED_PAYMENT_REQUEST,
-      message: `${currentUser.fullName} đã thanh toán nhắc nợ với số tiền: ${remindData.amount}`,
+      message: JSON.stringify(remindMessage),
       for: receiverAccount.owner.toString(),
     });
     await notification.save();
     await this.notificationService.emit(notification);
 
     return SuccessMessage.SUCCESS;
+  }
+
+  private async populateRemindMessage(remindId: string) {
+    return await this.remindModel
+      .findById(remindId)
+      .populate({
+        path: 'from',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      })
+      .populate({
+        path: 'to',
+        select: 'accountNumber',
+        populate: { path: 'owner', select: 'fullName -_id' },
+      });
   }
 }

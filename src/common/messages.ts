@@ -29,6 +29,7 @@ export enum ErrorMessage {
   INVALID_ACCOUNT_NUMBER = 'Invalid account number',
   INVALID_TRANSFER_REQUEST = 'Invalid transfer request',
   INVALID_DATA = 'Invalid data',
+  HEADER_FAILURE='Authorization header is missing or invalid',
 }
 
 export enum GenericErrorMessage {
@@ -78,6 +79,7 @@ export enum SucceedCode {
 }
 
 export enum CustomMessages {
+  CREATE_PAYMENT_REQUEST = 'Nhắc nợ',
   CANCEL_PAYMENT_REQUEST = 'Huỷ nhắc nợ',
   FULFILLED_PAYMENT_REQUEST = 'Thanh toán nhắc nợ thành công',
 }

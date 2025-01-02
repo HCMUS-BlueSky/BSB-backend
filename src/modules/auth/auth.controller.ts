@@ -7,6 +7,7 @@ import {
   Put,
   Res,
   UseGuards,
+  Headers
 } from '@nestjs/common';
 import { LoginRequestDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
@@ -25,6 +26,7 @@ import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
 import { Cookies } from 'src/vendors/decorators/cookies.decorator';
+import { ResetPasswordDto } from './dto/reset-password-dto';
 
 @Controller('auth')
 @UseGuards(AuthGuard)
@@ -104,6 +106,25 @@ export class AuthController extends BaseController {
   })
   async refresh(@Cookies('refreshToken') refreshToken: string) {
     return this.response(await this.authService.refreshToken(refreshToken));
+  }
+
+
+  @Put('reset-password')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reset password',
+    description: 'Reset user password using a reset token in the header',
+  })
+  @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  async resetPassword(
+    @Headers('authorization') authHeader: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+
+
+    return this.response(
+      await this.authService.resetPassword(authHeader, resetPasswordDto),
+    );
   }
   // @ApiTags('Auth')
   // @Post('confirm')
