@@ -29,7 +29,7 @@ export enum ErrorMessage {
   INVALID_ACCOUNT_NUMBER = 'Invalid account number',
   INVALID_TRANSFER_REQUEST = 'Invalid transfer request',
   INVALID_DATA = 'Invalid data',
-  HEADER_FAILURE='Authorization header is missing or invalid',
+  HEADER_FAILURE = 'Authorization header is missing or invalid',
 }
 
 export enum GenericErrorMessage {
