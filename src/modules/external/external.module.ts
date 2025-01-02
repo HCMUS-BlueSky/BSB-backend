@@ -25,5 +25,6 @@ import { User, UserSchema } from 'src/schemas/user.schema';
   ],
   controllers: [ExternalController],
   providers: [ExternalService],
+  exports: [ExternalService],
 })
 export class ExternalModule {}

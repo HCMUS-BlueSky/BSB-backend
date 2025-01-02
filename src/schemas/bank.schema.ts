@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { BANK_TYPE } from 'src/common/constants';
 
 export type BankDocument = HydratedDocument<Bank>;
 
@@ -18,6 +19,9 @@ export class Bank {
   baseUrl: string;
 
   @Prop({ type: String, required: true })
+  publicKeyPath: string;
+
+  @Prop({ type: String, required: true })
   accountInfoPath: string;
 
   @Prop({ type: String, required: true })
@@ -25,6 +29,9 @@ export class Bank {
 
   @Prop({ type: String, required: true })
   secretKey: string;
+
+  @Prop({ enum: BANK_TYPE })
+  type: string;
 }
 
 export const BankSchema = SchemaFactory.createForClass(Bank);

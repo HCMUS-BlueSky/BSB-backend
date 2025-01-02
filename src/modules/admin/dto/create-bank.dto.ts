@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsIP, IsUrl, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, IsIP, IsUrl, Matches, IsEnum } from 'class-validator';
+import { BANK_TYPE } from 'src/common/constants';
 
 export class CreateBankDto {
   @ApiProperty()
@@ -29,6 +30,12 @@ export class CreateBankDto {
   @IsNotEmpty()
   @IsString()
   @Matches(/^(\/\w+)+$/)
+  publicKeyPath: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  @Matches(/^(\/\w+)+$/)
   accountInfoPath: string;
 
   @ApiProperty()
@@ -41,4 +48,9 @@ export class CreateBankDto {
   @IsNotEmpty()
   @IsString()
   secretKey: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(BANK_TYPE)
+  type: string;
 }

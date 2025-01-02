@@ -21,7 +21,14 @@ export enum ErrorMessage {
   INVALID_USER_REMIND = 'Invalid user remind',
   EMAIL_NOT_ASSOCIATED = 'Email not associated with any account',
   INVALID_REMIND = 'Invalid remind',
-  DOB_NOT_IN_FUTURE='Birthday cannot be in the future'
+  DOB_NOT_IN_FUTURE = 'Birthday cannot be in the future',
+  BANK_IS_NOT_REGISTERED = 'Bank is not registered',
+  INVALID_REQUEST = 'Invalid request',
+  INVALID_REQUEST_DATE = 'Invalid request date',
+  INVALID_REQUEST_SIGNATURE = 'Invalid request signature',
+  INVALID_ACCOUNT_NUMBER = 'Invalid account number',
+  INVALID_TRANSFER_REQUEST = 'Invalid transfer request',
+  INVALID_DATA = 'Invalid data',
 }
 
 export enum GenericErrorMessage {

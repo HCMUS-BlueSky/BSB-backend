@@ -24,7 +24,7 @@ export class Account {
   type: string;
 
   @Prop({ type: Types.ObjectId, ref: Bank.name })
-  externalBank: BankDocument;
+  bank: BankDocument;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

@@ -3,11 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ExternalService } from './external.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -16,6 +14,8 @@ import { EncryptionService } from 'src/services/encryption/encryption.service';
 import { AccountService } from '../account/account.service';
 import { ExternalDto } from './dto/external.dto';
 import { AccountInfoDto } from './dto/account-info.dto';
+import { ExternalGuard } from 'src/vendors/guards/external.guard';
+import { FromBank } from 'src/vendors/decorators/bank.decorator';
 
 @Controller('external')
 export class ExternalController extends BaseController {
@@ -50,6 +50,7 @@ export class ExternalController extends BaseController {
   }
 
   @Post('/account/info')
+  @UseGuards(ExternalGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get user info by account number',
@@ -58,21 +59,27 @@ export class ExternalController extends BaseController {
   @ApiResponse({ status: 200, description: 'Success' })
   async getUserInfoByAccountNumber(@Body() accountInfoDto: AccountInfoDto) {
     return this.response(
-      await this.accountService.getUserInfoByAccountNumber(
-        accountInfoDto.accountNumber,
+      await this.externalService.getUserInfoByAccountNumber(
+        accountInfoDto.data,
       ),
     );
   }
 
   @Post('/transfer')
+  @UseGuards(ExternalGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Transfer money to internal account',
     description: 'Transfer money to internal account (used by external bank)',
   })
   @ApiResponse({ status: 200, description: 'Success' })
-  async externalTransfer(@Body() externalDto: ExternalDto) {
-    return this.response(await this.externalService.transfer(externalDto));
+  async externalTransfer(
+    @Body() externalDto: ExternalDto,
+    @FromBank() bank: any,
+  ) {
+    return this.response(
+      await this.externalService.transfer(externalDto, bank),
+    );
   }
 
   @Get('/test')

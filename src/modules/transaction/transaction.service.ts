@@ -300,7 +300,10 @@ export class TransactionService {
       .populate({
         path: 'sender',
         select: 'accountNumber',
-        populate: { path: 'owner', select: 'fullName -_id' },
+        populate: [
+          { path: 'owner', select: 'fullName -_id' },
+          { path: 'bank', select: 'name logo' },
+        ],
       });
     const reminders = await this.remindModel
       .find({

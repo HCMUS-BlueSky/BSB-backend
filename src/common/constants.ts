@@ -42,4 +42,9 @@ export enum FEE {
   MAX = 100000,
 }
 
+export enum BANK_TYPE {
+  RSA = 'RSA',
+  PGP = 'PGP',
+}
+
 export const OTP_EXPIRED_TIME = 3 * 60 * 60 * 1000; // 3 hours
