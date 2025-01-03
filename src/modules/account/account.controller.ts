@@ -14,6 +14,7 @@ import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BaseController } from 'src/vendors/base';
 import { AccountInfoDto } from './dto/account-info.dto';
+import { ExternalAccountInfoDto } from './dto/external-account-info.dto';
 
 @Controller('account')
 @UseGuards(AuthGuard)
@@ -77,6 +78,26 @@ export class AccountController extends BaseController {
     return this.response(
       await this.accountService.getUserInfoByAccountNumberOrEmail(
         accountInfoDto,
+      ),
+    );
+  }
+
+  @Post('/external/info')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Get external user info by account number',
+    description: 'Get external user info by account number',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async getExternalUserInfoByAccountNumber(
+    @Body() externalAccountInfoDto: ExternalAccountInfoDto,
+  ) {
+    return this.response(
+      await this.accountService.getExternalAccountInfo(
+        externalAccountInfoDto.accountNumber,
+        externalAccountInfoDto.bankId,
       ),
     );
   }

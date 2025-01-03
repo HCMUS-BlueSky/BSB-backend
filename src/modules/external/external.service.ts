@@ -9,7 +9,11 @@ import {
   TransactionDocument,
 } from 'src/schemas/transaction.schema';
 import { Bank, BankDocument } from 'src/schemas/bank.schema';
-import { ACCOUNT_TYPE, TRANSACTION_STATUS, TRANSACTION_TYPE } from 'src/common/constants';
+import {
+  ACCOUNT_TYPE,
+  TRANSACTION_STATUS,
+  TRANSACTION_TYPE,
+} from 'src/common/constants';
 import { ErrorMessage, SuccessMessage } from 'src/common/messages';
 
 @Injectable()

@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
-import { ACCOUNT_TYPE } from 'src/common/constants';
+import { ACCOUNT_TYPE, BANK_TYPE } from 'src/common/constants';
 import { AccountInfoDto } from './dto/account-info.dto';
 import { User, UserDocument } from 'src/schemas/user.schema';
+import { HttpService } from '@nestjs/axios';
+import { Bank, BankDocument } from 'src/schemas/bank.schema';
+import { ErrorMessage } from 'src/common/messages';
+import crypto from 'crypto';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AccountService {
@@ -15,6 +20,9 @@ export class AccountService {
     private accountModel: Model<AccountDocument>,
     @InjectModel(User.name, 'users')
     private userModel: Model<UserDocument>,
+    @InjectModel(Bank.name, 'users')
+    private bankModel: Model<BankDocument>,
+    private readonly httpService: HttpService,
   ) {}
   // async findOneByEmail(email: string) {
   //   return await this.userModel.findOne({ email: email });
@@ -79,6 +87,51 @@ export class AccountService {
       })
       .select('email fullName phone');
     return user;
+  }
+
+  async getExternalAccountInfo(accountNumber: string, bankId: string) {
+    const bank = await this.bankModel.findById(bankId);
+    if (!bank) {
+      throw new BadRequestException(ErrorMessage.BANK_IS_NOT_REGISTERED);
+    }
+    const { baseUrl, publicKeyPath, accountInfoPath, secretKey, type } = bank;
+    if (type === BANK_TYPE.PGP) {
+      throw new BadRequestException(ErrorMessage.NOT_IMPLEMENTED);
+    }
+    const publicKeyRaw = await firstValueFrom(
+      this.httpService.get(baseUrl + publicKeyPath),
+    );
+    const publicKey = publicKeyRaw.data.data;
+    console.log(publicKey);
+    // TODO: ENCRYPT accountNumber WITH publicKey
+    const encrypted = '';
+    const body = {
+      data: encrypted,
+    };
+    const info = await firstValueFrom(
+      this.httpService.post(
+        baseUrl + accountInfoPath,
+        {
+          mode: 'no-cors',
+          body: body,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Signature: crypto
+              .createHash('md5')
+              .update(JSON.stringify(body) + secretKey)
+              .digest('hex'),
+            RequestDate: new Date().getTime(),
+          },
+        },
+      ),
+    );
+    return info.data.data;
+    // return await this.accountModel.findOne({
+    //   owner: user.id,
+    //   type: ACCOUNT_TYPE.INTERNAL,
+    // });
   }
   // update(id: number, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;

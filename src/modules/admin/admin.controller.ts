@@ -5,12 +5,21 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Get,
+  DefaultValuePipe,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateBankDto } from './dto/create-bank.dto';
 import { BaseController } from 'src/vendors/base';
 import { AuthGuard } from 'src/vendors/guards/auth.guard';
-import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ROLES } from 'src/common/constants';
 import { IsForceLogin } from 'src/vendors/decorators';
 import { Roles } from 'src/vendors/decorators/role.decorator';
@@ -36,6 +45,29 @@ export class AdminController extends BaseController {
     return this.response(await this.adminService.registerBank(createBankDto));
   }
 
+  @Get('/externalTransactions')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @Roles([ROLES.ADMIN])
+  @ApiOperation({
+    summary: 'Get all external transactions (ADMIN ONLY)',
+    description: 'Get all external transactions (ADMIN ONLY)',
+  })
+  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiBearerAuth()
+  @ApiQuery({
+    name: 'limit',
+    default: 30,
+    required: false,
+    description: 'Limit number of days',
+  })
+  async getExternalTransactions(
+    @Query('limit', new DefaultValuePipe(30), ParseIntPipe) limit: number,
+  ) {
+    return this.response(
+      await this.adminService.getExternalTransactions(limit),
+    );
+  }
   // @Get()
   // findAll() {
   //   return this.adminService.findAll();

@@ -11,12 +11,14 @@ import { ErrorMessage } from 'src/common/messages';
 import { ExternalService } from 'src/modules/external/external.service';
 import { Bank, BankDocument } from 'src/schemas/bank.schema';
 import crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ExternalGuard implements CanActivate {
   constructor(
     @Inject(ExternalService) private readonly authService: ExternalService,
     @InjectModel(Bank.name, 'users') private bankModel: Model<BankDocument>,
+    private readonly configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -41,7 +43,7 @@ export class ExternalGuard implements CanActivate {
     const currentDate = new Date();
     const diff = currentDate.getTime() - parseInt(requestDate);
     // console.log(diff);
-    if (diff > 300000) {
+    if (diff > 30000) {
       throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_DATE);
     }
 
@@ -52,7 +54,9 @@ export class ExternalGuard implements CanActivate {
     }
     const calculated = crypto
       .createHash('md5')
-      .update(JSON.stringify(request.body) + request.bank.secretKey)
+      .update(
+        JSON.stringify(request.body) + this.configService.get('SECRET_API_KEY'),
+      )
       .digest('hex');
 
     if (signature !== calculated) {

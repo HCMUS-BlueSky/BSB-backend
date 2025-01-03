@@ -82,16 +82,16 @@ export class ExternalController extends BaseController {
     );
   }
 
-  @Get('/test')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Get public key for encryption',
-    description: 'Get public key for encryption to use for external transfer',
-  })
-  @ApiResponse({ status: 200, description: 'Success' })
-  async test() {
-    const data = await this.encryptionService.encrypt('lmaolmao');
-    console.log(await this.encryptionService.decrypt(data));
-    return this.response(data);
-  }
+  // @Get('/test')
+  // @HttpCode(HttpStatus.OK)
+  // @ApiOperation({
+  //   summary: 'Get public key for encryption',
+  //   description: 'Get public key for encryption to use for external transfer',
+  // })
+  // @ApiResponse({ status: 200, description: 'Success' })
+  // async test() {
+  //   const data = await this.encryptionService.encrypt('lmaolmao');
+  //   console.log(await this.encryptionService.decrypt(data));
+  //   return this.response(data);
+  // }
 }

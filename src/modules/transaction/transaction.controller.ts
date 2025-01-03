@@ -29,6 +29,8 @@ import { AuthUser, IsForceLogin } from 'src/vendors/decorators';
 import { ConfirmInternalTransactionDto } from './dto/confirm-internal-transaction.dto';
 import { ResendTransactionOTPDto } from './dto/resend-otp.dto';
 import { IsObjectIdPipe } from 'nestjs-object-id';
+import { CreateExternalTransactionDto } from './dto/create-external-transaction.dto';
+import { ConfirmExternalTransactionDto } from './dto/confirm-external-transaction.dto';
 
 @Controller('transfer')
 @UseGuards(AuthGuard, RolesGuard)
@@ -177,5 +179,47 @@ export class TransactionController extends BaseController {
   @ApiBearerAuth()
   async remove(@Param('id', IsObjectIdPipe) id: string, @AuthUser() user: any) {
     return this.response(await this.transactionService.remove(id, user));
+  }
+
+  @Post('/external')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Create exernal transaction',
+    description: 'Create exernal transaction',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async transferExternal(
+    @Body() createExternalTransactionDto: CreateExternalTransactionDto,
+    @AuthUser() user: any,
+  ) {
+    return this.response(
+      await this.transactionService.createExternalTransaction(
+        createExternalTransactionDto,
+        user,
+      ),
+    );
+  }
+
+  @Post('/external/confirm')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Confirm exernal transaction',
+    description: 'Confirm exernal transaction with OTP',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async confirmTransferExternal(
+    @Body() confirmExternalTransactionDto: ConfirmExternalTransactionDto,
+    @AuthUser() user: any,
+  ) {
+    return this.response(
+      await this.transactionService.confirmExternalTransaction(
+        confirmExternalTransactionDto,
+        user,
+      ),
+    );
   }
 }

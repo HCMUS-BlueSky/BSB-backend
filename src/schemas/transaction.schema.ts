@@ -6,6 +6,7 @@ import {
   TRANSACTION_STATUS,
   TRANSACTION_TYPE,
 } from 'src/common/constants';
+import { Bank, BankDocument } from './bank.schema';
 
 export type TransactionDocument = HydratedDocument<Transaction>;
 
@@ -34,6 +35,9 @@ export class Transaction {
 
   @Prop({ default: PAYER.SENDER, enum: PAYER })
   feePayer: string;
+
+  @Prop({ type: Types.ObjectId, ref: Bank.name })
+  bank: BankDocument;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

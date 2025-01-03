@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { RECEIVER_TYPE } from 'src/common/constants';
 import { User } from './user.schema';
+import { Bank, BankDocument } from './bank.schema';
 
 export type ReceiverDocument = HydratedDocument<Receiver>;
 
@@ -18,6 +19,9 @@ export class Receiver {
 
   @Prop({ default: RECEIVER_TYPE.INTERNAL, enum: RECEIVER_TYPE })
   type: string;
+
+  @Prop({ type: Types.ObjectId, ref: Bank.name })
+  bank: BankDocument;
 }
 
 export const ReceiverSchema = SchemaFactory.createForClass(Receiver);

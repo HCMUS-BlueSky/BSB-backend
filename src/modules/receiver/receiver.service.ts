@@ -59,7 +59,13 @@ export class ReceiverService {
     const receiverList = await this.userModel
       .findById(user.id)
       .select('receiverList -_id')
-      .populate('receiverList');
+      .populate({
+        path: 'receiverList',
+        populate: {
+          path: 'bank',
+          select: 'name logo',
+        },
+      });
     return receiverList;
   }
 
