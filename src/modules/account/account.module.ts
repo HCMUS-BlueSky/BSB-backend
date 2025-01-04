@@ -6,6 +6,7 @@ import { Account, AccountSchema } from 'src/schemas/account.schema';
 import { User, UserSchema } from 'src/schemas/user.schema';
 import { HttpModule } from '@nestjs/axios';
 import { Bank, BankSchema } from 'src/schemas/bank.schema';
+import { EncryptionModule } from 'src/services/encryption/encryption.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Bank, BankSchema } from 'src/schemas/bank.schema';
       timeout: 5000,
       maxRedirects: 5,
     }),
+    EncryptionModule,
   ],
   controllers: [AccountController],
   providers: [AccountService],

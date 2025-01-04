@@ -47,9 +47,12 @@ export class EncryptionService {
     const privateKey = await openpgp.readPrivateKey({
       armoredKey: this.privateKey,
     });
+    const unsignedMessage = await openpgp.createMessage({ text: data })
     const signed = await openpgp.sign({
-      message: await openpgp.createMessage({ text: data }),
+      message: unsignedMessage,
       signingKeys: privateKey,
+      date: new Date(Date.now() - 10000),
+      detached: true,
     });
     return signed;
   }
@@ -73,10 +76,9 @@ export class EncryptionService {
   async RSAverify(data: string, signature: string, publicKey: string) {
     try {
       const verify = crypto.createVerify('RSA-SHA256');
-
       verify.update(data);
       verify.end();
-      return verify.verify(publicKey, signature);
+      return verify.verify(publicKey, signature, 'base64url');;
     } catch (error) {
       console.log(error);
       return false;

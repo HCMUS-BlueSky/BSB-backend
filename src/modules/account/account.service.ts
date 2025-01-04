@@ -11,6 +11,7 @@ import { Bank, BankDocument } from 'src/schemas/bank.schema';
 import { ErrorMessage } from 'src/common/messages';
 import crypto from 'crypto';
 import { firstValueFrom } from 'rxjs';
+import { EncryptionService } from 'src/services/encryption/encryption.service';
 
 @Injectable()
 export class AccountService {
@@ -23,6 +24,7 @@ export class AccountService {
     @InjectModel(Bank.name, 'users')
     private bankModel: Model<BankDocument>,
     private readonly httpService: HttpService,
+    private readonly encryptionService: EncryptionService,
   ) {}
   // async findOneByEmail(email: string) {
   //   return await this.userModel.findOne({ email: email });
@@ -98,41 +100,29 @@ export class AccountService {
     if (type === BANK_TYPE.PGP) {
       throw new BadRequestException(ErrorMessage.NOT_IMPLEMENTED);
     }
-    const publicKeyRaw = await firstValueFrom(
-      this.httpService.get(baseUrl + publicKeyPath),
-    );
-    const publicKey = publicKeyRaw.data.data;
-    console.log(publicKey);
-    // crypto.generateKeyPairSync()
-    // TODO: ENCRYPT accountNumber WITH publicKey
-    const encrypted = '';
+
     const body = {
-      data: encrypted,
+      accountNumber: accountNumber,
     };
+    const XSignature = await this.encryptionService.sign(JSON.stringify(body));
+
     const info = await firstValueFrom(
       this.httpService.post(
         baseUrl + accountInfoPath,
-        {
-          mode: 'no-cors',
-          body: body,
-        },
+        body,
         {
           headers: {
-            'Content-Type': 'application/json',
             Signature: crypto
               .createHash('md5')
               .update(JSON.stringify(body) + secretKey)
               .digest('hex'),
             RequestDate: new Date().getTime(),
+            "X-Signature": Buffer.from(XSignature).toString('base64')
           },
         },
       ),
     );
     return info.data.data;
-    // return await this.accountModel.findOne({
-    //   owner: user.id,
-    //   type: ACCOUNT_TYPE.INTERNAL,
-    // });
   }
   // update(id: number, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;

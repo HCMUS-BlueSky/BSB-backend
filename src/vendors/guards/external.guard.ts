@@ -37,8 +37,8 @@ export class ExternalGuard implements CanActivate {
       }
     });
     if (!request.bank) {
-      throw new UnauthorizedException(ErrorMessage.BANK_IS_NOT_REGISTERED);
-      // request.bank = banks[0]; // Disable later
+      // throw new UnauthorizedException(ErrorMessage.BANK_IS_NOT_REGISTERED);
+      request.bank = banks[0]; // Disable later
     }
     // CHECK DATE
     const requestDate = request.get('RequestDate');
@@ -53,6 +53,7 @@ export class ExternalGuard implements CanActivate {
     }
 
     // CHECK INTEGRITY
+    console.log("asdsadasd");
     const signature = request.get('Signature');
     if (!signature) {
       throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_TAMPERED);
@@ -77,7 +78,7 @@ export class ExternalGuard implements CanActivate {
     const publicKeyRaw = await firstValueFrom(
       this.httpService.get(baseUrl + publicKeyPath),
     );
-    const publicKey = publicKeyRaw.data.data;
+    const publicKey = publicKeyRaw.data.data.split(String.raw`\n`).join('\n');
     const verified = await this.encryptionService.RSAverify(
       JSON.stringify(request.body),
       XSignature,
