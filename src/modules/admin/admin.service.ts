@@ -24,15 +24,21 @@ export class AdminService {
     return SuccessMessage.SUCCESS;
   }
 
-  async getExternalTransactions(limit: number) {
+  async getExternalTransactions(limit: number, bank?: string) {
+    const query: any = {
+      status: TRANSACTION_STATUS.FULFILLED,
+      updatedAt: {
+        $gte: new Date(new Date().setDate(new Date().getDate() - limit)),
+      },
+      type: TRANSACTION_TYPE.EXTERNAL,
+    };
+  
+    if (bank) {
+      query['bank'] = bank;
+    }
+  
     const transactions = await this.transactionModel
-      .find({
-        status: TRANSACTION_STATUS.FULFILLED,
-        updatedAt: {
-          $gte: new Date(new Date().setDate(new Date().getDate() - limit)),
-        },
-        type: TRANSACTION_TYPE.EXTERNAL,
-      })
+      .find(query)
       .populate({
         path: 'receiver',
         select: 'accountNumber',
