@@ -6,7 +6,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Response,
 } from '@nestjs/common';
+import { Response as Res } from 'express';
 import { ExternalService } from './external.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BaseController } from 'src/vendors/base';
@@ -57,12 +59,14 @@ export class ExternalController extends BaseController {
     description: 'Get user info by account number',
   })
   @ApiResponse({ status: 200, description: 'Success' })
-  async getUserInfoByAccountNumber(@Body() accountInfoDto: AccountInfoDto) {
-    return this.response(
+  async getUserInfoByAccountNumber(@Body() accountInfoDto: AccountInfoDto, @Response({ passthrough: true }) res: Res) {
+    const ret = this.response(
       await this.externalService.getUserInfoByAccountNumber(
         accountInfoDto.accountNumber,
-      ),
+      )
     );
+    res.header("X-Signature", await this.encryptionService.sign(JSON.stringify(ret)))
+    return ret;
   }
 
   @Post('/transfer')
@@ -76,10 +80,11 @@ export class ExternalController extends BaseController {
   async externalTransfer(
     @Body() externalDto: ExternalDto,
     @FromBank() bank: any,
+    @Response({ passthrough: true }) res: Res
   ) {
-    return this.response(
-      await this.externalService.transfer(externalDto, bank),
-    );
+    const ret = this.response(await this.externalService.transfer(externalDto, bank));
+    res.header("X-Signature", await this.encryptionService.sign(JSON.stringify(ret)))
+    return ret;
   }
 
   // @Get('/test')

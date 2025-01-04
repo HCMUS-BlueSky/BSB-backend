@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
@@ -96,7 +96,7 @@ export class AccountService {
     if (!bank) {
       throw new BadRequestException(ErrorMessage.BANK_IS_NOT_REGISTERED);
     }
-    const { baseUrl, accountInfoPath, secretKey, type } = bank;
+    const { baseUrl, accountInfoPath, publicKeyPath, secretKey, type } = bank;
     if (type === BANK_TYPE.PGP) {
       throw new BadRequestException(ErrorMessage.NOT_IMPLEMENTED);
     }
@@ -105,7 +105,6 @@ export class AccountService {
       accountNumber: accountNumber,
     };
     const XSignature = await this.encryptionService.sign(JSON.stringify(body));
-
     const info = await firstValueFrom(
       this.httpService.post(baseUrl + accountInfoPath, body, {
         headers: {
@@ -114,10 +113,24 @@ export class AccountService {
             .update(JSON.stringify(body) + secretKey)
             .digest('hex'),
           RequestDate: new Date().getTime(),
-          'X-Signature': Buffer.from(XSignature).toString('base64'),
+          'X-Signature': XSignature,
         },
       }),
     );
+    const XSignatureReceived = info.headers['x-signature'];
+
+    const publicKeyRaw = await firstValueFrom(
+      this.httpService.get(baseUrl + publicKeyPath),
+    );
+    const publicKey = publicKeyRaw.data.data.split(String.raw`\n`).join('\n');
+    const verified = await this.encryptionService.RSAverify(
+      JSON.stringify(info.data.data),
+      XSignatureReceived,
+      publicKey,
+    );
+    if (!verified) {
+      throw new UnauthorizedException(ErrorMessage.INVALID_RESPONSE_SIGNATURE);
+    }
     return info.data.data;
   }
   // update(id: number, updateUserDto: UpdateUserDto) {

@@ -1,9 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsNumberString, IsString, Min } from 'class-validator';
 
 export class ExternalDto {
   @ApiProperty()
   @IsNotEmpty()
+  @IsNumberString()
+  fromAccountNumber: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumberString()
+  toAccountNumber: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
-  data: string;
+  description: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber({ allowInfinity: false, allowNaN: false })
+  @Min(100)
+  amount: number;
 }

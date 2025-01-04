@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateInternalTransactionDto } from './dto/create-internal-transaction.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -38,6 +38,7 @@ import { ConfirmExternalTransactionDto } from './dto/confirm-external-transactio
 import { HttpService } from '@nestjs/axios';
 import crypto from 'crypto';
 import { firstValueFrom } from 'rxjs';
+import { EncryptionService } from 'src/services/encryption/encryption.service';
 
 @Injectable()
 export class TransactionService {
@@ -57,6 +58,7 @@ export class TransactionService {
     private readonly receiverService: ReceiverService,
     private readonly accountService: AccountService,
     private readonly httpService: HttpService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async createInternalTransaction(
@@ -413,6 +415,7 @@ export class TransactionService {
       throw new BadRequestException(ErrorMessage.NOT_IMPLEMENTED);
     }
     // CHECK IF EXTERNAL ACCOUNT IS VALID
+    let nickname = ""
     try {
       const accountInfo = await this.accountService.getExternalAccountInfo(
         data.accountNumber,
@@ -420,7 +423,10 @@ export class TransactionService {
       );
       if (!accountInfo)
         throw new BadRequestException(ErrorMessage.INVALID_ACCOUNT_NUMBER);
-    } catch {
+      // console.log(accountInfo)
+      nickname = accountInfo["fullName"] || accountInfo["full_name"]
+    } catch (error) {
+      console.log(error)
       throw new BadRequestException(ErrorMessage.INVALID_ACCOUNT_NUMBER);
     }
 
@@ -482,6 +488,7 @@ export class TransactionService {
             accountNumber: data.accountNumber,
             type: RECEIVER_TYPE.EXTERNAL,
             bank: bank.id,
+            nickname: nickname
           },
           user,
         );
@@ -553,43 +560,50 @@ export class TransactionService {
     if (type === BANK_TYPE.PGP) {
       throw new BadRequestException(ErrorMessage.NOT_IMPLEMENTED);
     }
-    const publicKeyRaw = await firstValueFrom(
-      this.httpService.get(baseUrl + publicKeyPath),
-    );
-    const publicKey = publicKeyRaw.data.data;
-    console.log(publicKey);
+    // const publicKeyRaw = await firstValueFrom(
+    //   this.httpService.get(baseUrl + publicKeyPath),
+    // );
+    // const publicKey = publicKeyRaw.data.data;
+    // console.log(publicKey);
 
-    const dataToEncrypt = {
+    const body = {
       fromAccountNumber: currentAccount.accountNumber,
       toAccountNumber: receiverAccount.accountNumber,
       amount: amountToReceive,
       description: transactionData.description,
     };
-    console.log(JSON.stringify(dataToEncrypt));
-    // TODO: ENCRYPT JSON.stringify(dataToEncrypt) WITH publicKey
-    const encrypted = '';
-    const body = {
-      data: encrypted,
-    };
-    await firstValueFrom(
+    const XSignature = await this.encryptionService.sign(JSON.stringify(body));
+    const response = await firstValueFrom(
       this.httpService.post(
         baseUrl + transferPath,
-        {
-          mode: 'no-cors',
-          body: body,
-        },
+        body,
         {
           headers: {
-            'Content-Type': 'application/json',
             Signature: crypto
               .createHash('md5')
               .update(JSON.stringify(body) + secretKey)
               .digest('hex'),
             RequestDate: new Date().getTime(),
+            'X-Signature': XSignature,
           },
         },
       ),
     );
+    const XSignatureReceived = response.headers['x-signature'];
+    
+    const publicKeyRaw = await firstValueFrom(
+      this.httpService.get(baseUrl + publicKeyPath),
+    );
+    const publicKey = publicKeyRaw.data.data.split(String.raw`\n`).join('\n');
+    const verified = await this.encryptionService.RSAverify(
+      JSON.stringify(response.data.data),
+      XSignatureReceived,
+      publicKey,
+    );
+    if (!verified) {
+      throw new UnauthorizedException(ErrorMessage.INVALID_RESPONSE_SIGNATURE);
+    }
+
     await this.accountModel.findByIdAndUpdate(currentAccount.id, {
       $inc: { balance: -amountToPay },
     });

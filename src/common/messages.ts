@@ -26,6 +26,7 @@ export enum ErrorMessage {
   INVALID_REQUEST = 'Invalid request',
   INVALID_REQUEST_DATE = 'Invalid request date',
   INVALID_REQUEST_SIGNATURE = 'Invalid request signature',
+  INVALID_RESPONSE_SIGNATURE = 'Invalid response signature',
   INVALID_REQUEST_TAMPERED = 'Request tampered',
   INVALID_ACCOUNT_NUMBER = 'Invalid account number',
   INVALID_TRANSFER_REQUEST = 'Invalid transfer request',

@@ -13,6 +13,7 @@ import { ReceiverModule } from '../receiver/receiver.module';
 import { Bank, BankSchema } from 'src/schemas/bank.schema';
 import { AccountModule } from '../account/account.module';
 import { HttpModule } from '@nestjs/axios';
+import { EncryptionModule } from 'src/services/encryption/encryption.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { HttpModule } from '@nestjs/axios';
     ReceiverModule,
     MailModule,
     AccountModule,
+    EncryptionModule,
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,

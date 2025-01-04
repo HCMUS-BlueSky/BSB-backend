@@ -38,12 +38,40 @@ export class ReceiverService {
       const existed = await this.receiverModel.exists({
         of: user.id,
         accountNumber: data.accountNumber,
+        type: RECEIVER_TYPE.INTERNAL,
       });
       if (existed) {
         throw new BadRequestException(ErrorMessage.RECEIVER_EXISTED);
       }
       if (!data.nickname) {
         data.nickname = associatedAccount.owner.fullName;
+      }
+      const newReceiver = new this.receiverModel({ ...data, of: user.id });
+      await newReceiver.save();
+      await this.userModel.findByIdAndUpdate(user.id, {
+        $push: { receiverList: newReceiver.id },
+      });
+      return SuccessMessage.SUCCESS;
+    } else if (data.type === RECEIVER_TYPE.EXTERNAL) {
+      const associatedAccount = await this.accountModel
+        .findOne({
+          accountNumber: data.accountNumber,
+          type: ACCOUNT_TYPE.EXTERNAL,
+        })
+
+      if (!associatedAccount) {
+        throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+      }
+      if (!data.nickname) {
+        throw new BadRequestException(ErrorMessage.INVALID_DATA);
+      }
+      const existed = await this.receiverModel.exists({
+        of: user.id,
+        accountNumber: data.accountNumber,
+        type: RECEIVER_TYPE.EXTERNAL,
+      });
+      if (existed) {
+        throw new BadRequestException(ErrorMessage.RECEIVER_EXISTED);
       }
       const newReceiver = new this.receiverModel({ ...data, of: user.id });
       await newReceiver.save();

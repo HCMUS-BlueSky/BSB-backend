@@ -54,7 +54,7 @@ export class EncryptionService {
       date: new Date(Date.now() - 10000),
       detached: true,
     });
-    return signed;
+    return Buffer.from(signed).toString('base64');
   }
 
   async verify(data: string) {

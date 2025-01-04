@@ -30,11 +30,8 @@ export class ExternalService {
 
   async transfer(external: ExternalDto, bank: any) {
     try {
-      const { data } = external;
-      const rawData = await this.encryptionService.decrypt(data);
-      const jsonData = await JSON.parse(rawData);
       const { fromAccountNumber, toAccountNumber, amount, description } =
-        jsonData;
+        external;
       if (!fromAccountNumber || !toAccountNumber || !amount || !description) {
         throw new BadRequestException(ErrorMessage.INVALID_DATA);
       }
@@ -83,7 +80,7 @@ export class ExternalService {
   }
 
   async getBanks() {
-    return await this.bankModel.find();
+    return await this.bankModel.find().select('name logo');
   }
 
   async getUserInfoByAccountNumber(accountNumber: string) {
