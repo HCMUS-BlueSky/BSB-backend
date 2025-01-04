@@ -103,6 +103,7 @@ export class AccountService {
     );
     const publicKey = publicKeyRaw.data.data;
     console.log(publicKey);
+    // crypto.generateKeyPairSync()
     // TODO: ENCRYPT accountNumber WITH publicKey
     const encrypted = '';
     const body = {

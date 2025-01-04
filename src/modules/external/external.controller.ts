@@ -60,7 +60,7 @@ export class ExternalController extends BaseController {
   async getUserInfoByAccountNumber(@Body() accountInfoDto: AccountInfoDto) {
     return this.response(
       await this.externalService.getUserInfoByAccountNumber(
-        accountInfoDto.data,
+        accountInfoDto.accountNumber,
       ),
     );
   }

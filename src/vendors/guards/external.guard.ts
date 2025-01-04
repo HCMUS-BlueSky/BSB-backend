@@ -12,6 +12,9 @@ import { ExternalService } from 'src/modules/external/external.service';
 import { Bank, BankDocument } from 'src/schemas/bank.schema';
 import crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { EncryptionService } from 'src/services/encryption/encryption.service';
 
 @Injectable()
 export class ExternalGuard implements CanActivate {
@@ -19,6 +22,8 @@ export class ExternalGuard implements CanActivate {
     @Inject(ExternalService) private readonly authService: ExternalService,
     @InjectModel(Bank.name, 'users') private bankModel: Model<BankDocument>,
     private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -47,10 +52,10 @@ export class ExternalGuard implements CanActivate {
       throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_DATE);
     }
 
-    // CHECK SIGNATURE
+    // CHECK INTEGRITY
     const signature = request.get('Signature');
     if (!signature) {
-      throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_SIGNATURE);
+      throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_TAMPERED);
     }
     const calculated = crypto
       .createHash('md5')
@@ -60,6 +65,25 @@ export class ExternalGuard implements CanActivate {
       .digest('hex');
 
     if (signature !== calculated) {
+      throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_TAMPERED);
+    }
+
+    // VERIFY TOKEN
+    const XSignature = request.get('X-Signature');
+    if (!XSignature) {
+      throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_SIGNATURE);
+    }
+    const { baseUrl, publicKeyPath } = request.bank;
+    const publicKeyRaw = await firstValueFrom(
+      this.httpService.get(baseUrl + publicKeyPath),
+    );
+    const publicKey = publicKeyRaw.data.data;
+    const verified = await this.encryptionService.RSAverify(
+      JSON.stringify(request.body),
+      XSignature,
+      publicKey,
+    );
+    if (!verified) {
       throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_SIGNATURE);
     }
     return true;

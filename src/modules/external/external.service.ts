@@ -86,11 +86,8 @@ export class ExternalService {
     return await this.bankModel.find();
   }
 
-  async getUserInfoByAccountNumber(encryptedAccountNumber: string) {
+  async getUserInfoByAccountNumber(accountNumber: string) {
     try {
-      const accountNumber = await this.encryptionService.decrypt(
-        encryptedAccountNumber,
-      );
       // console.log(accountNumber)
       const account = await this.accountModel
         .findOne({
