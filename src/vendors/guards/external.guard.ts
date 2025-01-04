@@ -53,7 +53,6 @@ export class ExternalGuard implements CanActivate {
     }
 
     // CHECK INTEGRITY
-    console.log("asdsadasd");
     const signature = request.get('Signature');
     if (!signature) {
       throw new UnauthorizedException(ErrorMessage.INVALID_REQUEST_TAMPERED);

@@ -96,7 +96,7 @@ export class AccountService {
     if (!bank) {
       throw new BadRequestException(ErrorMessage.BANK_IS_NOT_REGISTERED);
     }
-    const { baseUrl, publicKeyPath, accountInfoPath, secretKey, type } = bank;
+    const { baseUrl, accountInfoPath, secretKey, type } = bank;
     if (type === BANK_TYPE.PGP) {
       throw new BadRequestException(ErrorMessage.NOT_IMPLEMENTED);
     }
@@ -107,20 +107,16 @@ export class AccountService {
     const XSignature = await this.encryptionService.sign(JSON.stringify(body));
 
     const info = await firstValueFrom(
-      this.httpService.post(
-        baseUrl + accountInfoPath,
-        body,
-        {
-          headers: {
-            Signature: crypto
-              .createHash('md5')
-              .update(JSON.stringify(body) + secretKey)
-              .digest('hex'),
-            RequestDate: new Date().getTime(),
-            "X-Signature": Buffer.from(XSignature).toString('base64')
-          },
+      this.httpService.post(baseUrl + accountInfoPath, body, {
+        headers: {
+          Signature: crypto
+            .createHash('md5')
+            .update(JSON.stringify(body) + secretKey)
+            .digest('hex'),
+          RequestDate: new Date().getTime(),
+          'X-Signature': Buffer.from(XSignature).toString('base64'),
         },
-      ),
+      }),
     );
     return info.data.data;
   }
