@@ -61,13 +61,20 @@ export class AdminController extends BaseController {
     required: false,
     description: 'Limit number of days',
   })
+  @ApiQuery({
+    name: 'bank',
+    required: false,
+    description: 'Filter by selected bank',
+  })
   async getExternalTransactions(
     @Query('limit', new DefaultValuePipe(30), ParseIntPipe) limit: number,
+    @Query('bank') bank: string,
   ) {
     return this.response(
-      await this.adminService.getExternalTransactions(limit),
+      await this.adminService.getExternalTransactions(limit, bank),
     );
   }
+  
   // @Get()
   // findAll() {
   //   return this.adminService.findAll();
