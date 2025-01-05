@@ -19,6 +19,7 @@ import {
   ACCOUNT_TYPE,
   BANK_TYPE,
   FEE,
+  OTP_EXPIRED_TIME,
   PAYER,
   RECEIVER_TYPE,
   REMIND_STATUS,
@@ -123,6 +124,7 @@ export class TransactionService {
     const OTP = new this.otpModel({
       transaction: newTransaction.id,
       otp: this.genOTP(),
+      expiry: new Date(+new Date() + OTP_EXPIRED_TIME)
     });
     await newTransaction.save();
     await OTP.save();
@@ -270,6 +272,7 @@ export class TransactionService {
     const OTP = new this.otpModel({
       transaction: transaction,
       otp: this.genOTP(),
+      expiry: new Date(+new Date() + OTP_EXPIRED_TIME)
     });
     await OTP.save();
     await this.mailService.sendTransactionOTP(OTP, currentUser);
@@ -484,6 +487,7 @@ export class TransactionService {
     const OTP = new this.otpModel({
       transaction: newTransaction.id,
       otp: this.genOTP(),
+      expiry: new Date(+new Date() + OTP_EXPIRED_TIME)
     });
     await newTransaction.save();
     await OTP.save();

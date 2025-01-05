@@ -11,7 +11,7 @@ import {
 } from 'src/common/messages';
 import { BadRequestException } from '@nestjs/common';
 import { Account, AccountDocument } from 'src/schemas/account.schema';
-import { ACCOUNT_TYPE, REMIND_STATUS } from 'src/common/constants';
+import { ACCOUNT_TYPE, OTP_EXPIRED_TIME, REMIND_STATUS } from 'src/common/constants';
 import { OTP, OTPDocument } from 'src/schemas/otp.schema';
 import { MailService } from 'src/services/mail/mail.service';
 import { ConfirmRepayDto } from './dto/confirm-repay.dto';
@@ -238,6 +238,7 @@ export class RemindService {
     const OTP = new this.otpModel({
       remind: remind.id,
       otp: this.genOTP(),
+      expiry: new Date(+new Date() + OTP_EXPIRED_TIME)
     });
     await OTP.save();
     await this.mailService.sendRemindOTP(OTP, currentUser);
