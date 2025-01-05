@@ -9,7 +9,9 @@ import {
   IsOptional,
   IsBoolean,
   IsMongoId,
+  IsEnum,
 } from 'class-validator';
+import { PAYER } from 'src/common/constants';
 
 export class CreateExternalTransactionDto {
   @ApiProperty()
@@ -28,6 +30,11 @@ export class CreateExternalTransactionDto {
   @IsNumber({ allowInfinity: false, allowNaN: false })
   @Min(100)
   amount: number;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(PAYER)
+  feePayer: PAYER;
 
   @ApiProperty()
   @IsNotEmpty()

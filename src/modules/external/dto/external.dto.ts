@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsNumberString, IsString, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsString, Min } from 'class-validator';
+import { PAYER } from 'src/common/constants';
 
 export class ExternalDto {
   @ApiProperty()
@@ -22,4 +23,9 @@ export class ExternalDto {
   @IsNumber({ allowInfinity: false, allowNaN: false })
   @Min(100)
   amount: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(PAYER)
+  feePayer: PAYER;
 }

@@ -11,6 +11,8 @@ import {
 import { Bank, BankDocument } from 'src/schemas/bank.schema';
 import {
   ACCOUNT_TYPE,
+  FEE,
+  PAYER,
   TRANSACTION_STATUS,
   TRANSACTION_TYPE,
 } from 'src/common/constants';
@@ -30,7 +32,7 @@ export class ExternalService {
 
   async transfer(external: ExternalDto, bank: any) {
     try {
-      const { fromAccountNumber, toAccountNumber, amount, description } =
+      const { fromAccountNumber, toAccountNumber, amount, description, feePayer } =
         external;
       if (!fromAccountNumber || !toAccountNumber || !amount || !description) {
         throw new BadRequestException(ErrorMessage.INVALID_DATA);
@@ -58,6 +60,12 @@ export class ExternalService {
         await fromAccount.save();
       }
 
+
+      let fee = 0;
+      if (feePayer == PAYER.RECEIVER) {
+        fee = this.calculateFee(amount);
+      }
+      const amountToReceive = amount - fee;
       const newTransactionData = {
         sender: fromAccount._id,
         receiver: toAccount.id,
@@ -65,13 +73,16 @@ export class ExternalService {
         description: description,
         status: TRANSACTION_STATUS.FULFILLED,
         type: TRANSACTION_TYPE.EXTERNAL,
+        fee: fee,
+        feePayer: feePayer,
+        bank: bank.id
       };
 
       const newTransaction = new this.transactionModel(newTransactionData);
       await newTransaction.save();
       await this.accountModel.findOneAndUpdate(
         { accountNumber: toAccountNumber },
-        { $inc: { balance: amount } },
+        { $inc: { balance: amountToReceive } },
       );
       return SuccessMessage.SUCCESS;
     } catch (err) {
@@ -81,6 +92,10 @@ export class ExternalService {
 
   async getBanks() {
     return await this.bankModel.find().select('name logo');
+  }
+
+  calculateFee(amount: number) {
+    return Math.min(Math.round((amount * FEE.PERCENTAGE) / 100), FEE.MAX);
   }
 
   async getUserInfoByAccountNumber(accountNumber: string) {

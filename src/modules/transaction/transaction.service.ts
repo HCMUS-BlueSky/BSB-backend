@@ -462,6 +462,12 @@ export class TransactionService {
     if (currentAccount.balance < data.amount) {
       throw new BadRequestException(ErrorMessage.INSUFFICIENT_BALANCE);
     }
+    const fee = this.calculateFee(data.amount);
+    if (data.feePayer === PAYER.SENDER) {
+      if (currentAccount.balance < data.amount + fee) {
+        throw new BadRequestException(ErrorMessage.INSUFFICIENT_BALANCE);
+      }
+    }
 
     const newTransactionData = {
       sender: currentAccount._id,
@@ -470,6 +476,8 @@ export class TransactionService {
       description: data.description,
       type: TRANSACTION_TYPE.EXTERNAL,
       bank: bank.id,
+      fee: fee,
+      feePayer: data.feePayer,
     };
 
     const newTransaction = new this.transactionModel(newTransactionData);
@@ -546,10 +554,21 @@ export class TransactionService {
     if (currentAccount.balance < transactionData.amount) {
       throw new BadRequestException(ErrorMessage.INSUFFICIENT_BALANCE);
     }
+    const fee = this.calculateFee(transactionData.amount);
     let amountToPay = 0,
       amountToReceive = 0;
-    amountToPay = transactionData.amount;
-    amountToReceive = transactionData.amount;
+    if (transactionData.feePayer === PAYER.SENDER) {
+      if (currentAccount.balance < transactionData.amount + fee) {
+        throw new BadRequestException(ErrorMessage.INSUFFICIENT_BALANCE);
+      }
+      amountToPay = transactionData.amount + fee;
+      amountToReceive = transactionData.amount;
+    } else if (transactionData.feePayer === PAYER.RECEIVER) {
+      amountToPay = transactionData.amount;
+      amountToReceive = transactionData.amount;
+    } else {
+      return GenericErrorMessage.BAD_REQUEST;
+    }
 
     // SEND EXTERNAL
     const bank = await this.bankModel.findById(transactionData.bank.toString());
@@ -571,6 +590,7 @@ export class TransactionService {
       toAccountNumber: receiverAccount.accountNumber,
       amount: amountToReceive,
       description: transactionData.description,
+      feePayer: transactionData.feePayer,
     };
     const XSignature = await this.encryptionService.sign(JSON.stringify(body));
     const response = await firstValueFrom(
