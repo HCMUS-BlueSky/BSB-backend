@@ -620,7 +620,7 @@ export class TransactionService {
     );
     const publicKey = publicKeyRaw.data.data.split(String.raw`\n`).join('\n');
     const verified = await this.encryptionService.RSAverify(
-      JSON.stringify(response.data.data),
+      JSON.stringify(response.data),
       XSignatureReceived,
       publicKey,
     );
