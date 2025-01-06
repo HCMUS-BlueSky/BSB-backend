@@ -8,7 +8,7 @@ import { AccountInfoDto } from './dto/account-info.dto';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { HttpService } from '@nestjs/axios';
 import { Bank, BankDocument } from 'src/schemas/bank.schema';
-import { ErrorMessage } from 'src/common/messages';
+import { ErrorMessage, SuccessMessage } from 'src/common/messages';
 import crypto from 'crypto';
 import { firstValueFrom } from 'rxjs';
 import { EncryptionService } from 'src/services/encryption/encryption.service';
@@ -133,11 +133,38 @@ export class AccountService {
     }
     return info.data.data;
   }
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
+  async disable(user: any) {
+    const account = await this.accountModel.findOne({
+      owner: user.id,
+      type: ACCOUNT_TYPE.INTERNAL,
+    });
+    if (!account) 
+      throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+
+    await this.accountModel.findOneAndUpdate({
+      owner: user.id,
+      type: ACCOUNT_TYPE.INTERNAL,
+    }, {
+      status: "INACTIVE",
+    })
+    return SuccessMessage.SUCCESS;
+  }
+
+  async enable(user: any) {
+    const account = await this.accountModel.findOne({
+      owner: user.id,
+      type: ACCOUNT_TYPE.INTERNAL,
+    });
+    if (!account)
+      throw new BadRequestException(ErrorMessage.ACCOUNT_NOT_EXIST);
+
+    await this.accountModel.findOneAndUpdate({
+      owner: user.id,
+      type: ACCOUNT_TYPE.INTERNAL,
+    }, {
+      status: "ACTIVE",
+    })
+    return SuccessMessage.SUCCESS;
+  }
 }

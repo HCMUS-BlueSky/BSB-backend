@@ -82,6 +82,40 @@ export class AccountController extends BaseController {
     );
   }
 
+  @Post('/disable')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Disable current user banking account',
+    description: 'Disable current user banking account',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async disableAccount(
+    @AuthUser() user: any,
+  ) {
+    return this.response(
+      await this.accountService.disable(user),
+    );
+  }
+
+  @Post('/enable')
+  @HttpCode(HttpStatus.OK)
+  @IsForceLogin(true)
+  @ApiOperation({
+    summary: 'Enable current user banking account',
+    description: 'Enable current user banking account',
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiBearerAuth()
+  async enable(
+    @AuthUser() user: any,
+  ) {
+    return this.response(
+      await this.accountService.enable(user),
+    );
+  }
+
   @Post('/external/info')
   @HttpCode(HttpStatus.OK)
   @IsForceLogin(true)
