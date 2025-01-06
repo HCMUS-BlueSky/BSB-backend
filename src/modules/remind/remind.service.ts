@@ -93,6 +93,9 @@ export class RemindService {
       .find({
         $or: [{ from: currentUser.account }, { to: currentUser.account }],
       })
+      .sort({
+        updatedAt: -1,
+      })
       .populate({
         path: 'from',
         select: 'accountNumber',
